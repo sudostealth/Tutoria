@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Sohid Osman Hadi';
+  src: local('Sohid Osman Hadi'), local('SohidOsmanHadi'), local('Sohid-Osman-Hadi'), local('Shahid Osman Hadi'),
+       url('https://cdn.jsdelivr.net/gh/bengali-fonts/sohid-osman-hadi/SohidOsmanHadi.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/bengali-fonts/sohid-osman-hadi/SohidOsmanHadi.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SohidOsmanHadi';
+  src: local('Sohid Osman Hadi'), local('SohidOsmanHadi'), local('Sohid-Osman-Hadi'), local('Shahid Osman Hadi'),
+       url('https://cdn.jsdelivr.net/gh/bengali-fonts/sohid-osman-hadi/SohidOsmanHadi.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/bengali-fonts/sohid-osman-hadi/SohidOsmanHadi.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  body {
+    font-family: 'Sohid Osman Hadi', 'SohidOsmanHadi', 'Shahid Osman Hadi', 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Custom smooth scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Leaflet map custom fixes */
+.leaflet-container {
+  font-family: 'Sohid Osman Hadi', 'SohidOsmanHadi', 'Anek Bangla', 'Hind Siliguri', 'Outfit', sans-serif !important;
+  z-index: 10;
+  border-radius: 0.75rem;
+}
+
+/* Print-friendly CSS Media Query for Tuition Memos & Requests */
+@media print {
+  /* Hide standard web layout elements */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  /* Make printable sheet visible and take full print page */
+  .printable-tuition-sheet,
+  .printable-tuition-sheet * {
+    visibility: visible !important;
+  }
+
+  .printable-tuition-sheet {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 0 !important;
+    page-break-inside: avoid;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+

@@ -1,0 +1,6 @@
+{
+  "name": "Tutoria",
+  "description": "A free tuition marketplace for Bangladesh connecting parents and tutors with zero cost, secret code management, and bilingual support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
