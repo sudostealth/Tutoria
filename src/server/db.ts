@@ -4,7 +4,10 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { initialTaxonomy } from '../lib/bdData';
 import { TuitionPost, TutorApplication, TaxonomyData, SiteStats, MonthlySummary, YearlySummary, LocationMonthlyStat, UniqueTutorRecord } from '../types';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+// Use /tmp for read-only serverless environments like Vercel
+const DATA_DIR = process.env.VERCEL || process.env.AWS_REGION || process.env.NODE_ENV === 'production'
+  ? '/tmp/data'
+  : path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'database.json');
 
 interface LocalPostStat {
@@ -184,8 +187,12 @@ class UnifiedDatabaseManager {
   }
 
   private ensureDirExists() {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    try {
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
+    } catch (err) {
+      console.warn('Warning: Could not create DATA_DIR. File system might be read-only.', err);
     }
   }
 
