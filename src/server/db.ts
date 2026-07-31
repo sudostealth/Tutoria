@@ -52,15 +52,27 @@ function generateSecretCode(prefix: 'P' | 'T'): string {
 function mapRowToPost(row: any): TuitionPost {
   let coords = { lat: 23.8103, lng: 90.4125 };
   if (row.coords) {
-    coords = typeof row.coords === 'string' ? JSON.parse(row.coords) : row.coords;
+    try {
+      coords = typeof row.coords === 'string' ? JSON.parse(row.coords) : row.coords;
+    } catch (e) {
+      console.warn('Failed to parse coords:', row.coords);
+    }
   }
   let subjects: string[] = [];
   if (row.subjects) {
-    subjects = Array.isArray(row.subjects) ? row.subjects : (typeof row.subjects === 'string' ? JSON.parse(row.subjects) : []);
+    try {
+      subjects = Array.isArray(row.subjects) ? row.subjects : (typeof row.subjects === 'string' ? JSON.parse(row.subjects) : []);
+    } catch (e) {
+      console.warn('Failed to parse subjects:', row.subjects);
+    }
   }
   let preferredDays: string[] = [];
   if (row.preferred_days) {
-    preferredDays = Array.isArray(row.preferred_days) ? row.preferred_days : (typeof row.preferred_days === 'string' ? JSON.parse(row.preferred_days) : []);
+    try {
+      preferredDays = Array.isArray(row.preferred_days) ? row.preferred_days : (typeof row.preferred_days === 'string' ? JSON.parse(row.preferred_days) : []);
+    } catch (e) {
+      console.warn('Failed to parse preferred_days:', row.preferred_days);
+    }
   }
 
   return {
