@@ -74,8 +74,8 @@ function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
     const payload = jwt.verify(token, JWT_SECRET) as { email: string };
 
     // Enforce configured Admin Email verification
-    const configAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || 'admin@tutoria.bd').trim().toLowerCase();
-    if (payload.email !== configAdminEmail) {
+    const configAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL);
+    if (configAdminEmail && payload.email !== configAdminEmail.trim().toLowerCase()) {
        res.status(401).json({ error: 'Unauthorized. Token email does not match admin email.' });
        return;
     }
@@ -629,34 +629,31 @@ app.post('/api/admin/login', async (req, res, next) => {
     }
 
     // Enforce configured Admin Email verification
-    const configAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || 'admin@tutoria.bd').trim().toLowerCase();
+    const configAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL);
     const providedEmail = email.trim().toLowerCase();
 
-    if (providedEmail !== configAdminEmail) {
+    if (configAdminEmail && providedEmail !== configAdminEmail.trim().toLowerCase()) {
       res.status(401).json({ error: 'Unauthorized login attempt. Admin email does not match system configuration.' });
       return;
     }
 
     const supabase = db.getSupabase();
-    if (supabase) {
-      // Authenticate user with Supabase Auth Engine
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: providedEmail,
-        password
-      });
+    if (!supabase) {
+      res.status(500).json({ error: 'Supabase must be configured for admin authentication.' });
+      return;
+    }
 
-      if (authError || !authData.user) {
-        res.status(401).json({
-          error: authError ? authError.message : 'Invalid Supabase admin credentials.'
-        });
-        return;
-      }
-    } else {
-      // Fallback for local environment before Supabase keys are configured
-      if (!db.verifyAdminPassword(password)) {
-        res.status(401).json({ error: 'Invalid admin password.' });
-        return;
-      }
+    // Authenticate user with Supabase Auth Engine
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: providedEmail,
+      password
+    });
+
+    if (authError || !authData.user) {
+      res.status(401).json({
+        error: authError ? authError.message : 'Invalid admin credentials.'
+      });
+      return;
     }
 
     // Issue Stateless JWT for Serverless environment

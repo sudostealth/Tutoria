@@ -5,16 +5,12 @@ import { ShieldCheck, Lock, CheckCircle, XCircle, Search, Key, Database, BarChar
 
 interface AdminPanelProps {
   language: Language;
-  isOpen: boolean;
-  onClose: () => void;
   taxonomy: TaxonomyData | null;
   onRefreshTaxonomy: () => void;
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   language,
-  isOpen,
-  onClose,
   taxonomy,
   onRefreshTaxonomy
 }) => {
@@ -41,26 +37,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [customTaxVal, setCustomTaxVal] = useState('');
   const [customTaxType, setCustomTaxType] = useState<'institutions' | 'departments'>('institutions');
 
-  // Verify stored token on modal open
+  // Verify stored token on mount
   useEffect(() => {
-    if (isOpen && adminToken) {
+    if (adminToken) {
       fetchPendingPosts(adminToken);
       fetchSiteStats();
     }
-  }, [isOpen, adminToken]);
-
-  // Close modal on ESC key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
+  }, [adminToken]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,18 +191,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   return (
-    <div
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
-      className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200 cursor-pointer"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden my-6 flex flex-col max-h-[92vh] cursor-default"
-      >
+    <div className="w-full">
+      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full overflow-hidden flex flex-col">
         
         {/* Header */}
         <div className="p-5 border-b border-slate-100 bg-slate-900 text-white flex items-center justify-between">
@@ -244,18 +217,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 লগআউট
               </button>
             )}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onClose();
-              }}
-              aria-label="Close modal"
-              className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
         </div>
 
