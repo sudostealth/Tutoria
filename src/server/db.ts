@@ -4,7 +4,9 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { initialTaxonomy } from '../lib/bdData';
 import { TuitionPost, TutorApplication, TaxonomyData, SiteStats, MonthlySummary, YearlySummary, LocationMonthlyStat, UniqueTutorRecord } from '../types';
 
-// Use /tmp for read-only serverless environments like Vercel
+// Local DB optional via env var, to avoid Vercel FS issues
+const USE_LOCAL_DB = process.env.USE_LOCAL_DB === 'true';
+
 const DATA_DIR = process.env.VERCEL || process.env.AWS_REGION || process.env.NODE_ENV === 'production'
   ? '/tmp/data'
   : path.join(process.cwd(), 'data');
@@ -173,9 +175,22 @@ class UnifiedDatabaseManager {
   private localData: DatabaseSchema;
 
   constructor() {
-    this.ensureDirExists();
-    this.localData = this.loadLocalData();
-    this.initSupabase();
+    this.localData = {
+      taxonomy: initialTaxonomy,
+      posts: [],
+      applications: [],
+      adminPasswordHash: 'admin123'
+    };
+
+    try {
+      this.initSupabase();
+      if (USE_LOCAL_DB) {
+        this.ensureDirExists();
+        this.localData = this.loadLocalData();
+      }
+    } catch (err) {
+      console.error('Error during UnifiedDatabaseManager initialization:', err);
+    }
   }
 
   public getSupabase(): SupabaseClient | null {
@@ -199,6 +214,7 @@ class UnifiedDatabaseManager {
   }
 
   private ensureDirExists() {
+    if (!USE_LOCAL_DB) return;
     try {
       if (!fs.existsSync(DATA_DIR)) {
         fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -244,24 +260,27 @@ class UnifiedDatabaseManager {
   }
 
   private loadLocalData(): DatabaseSchema {
-    if (fs.existsSync(DB_FILE)) {
-      try {
+    if (!USE_LOCAL_DB) return this.localData;
+
+    try {
+      if (fs.existsSync(DB_FILE)) {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
         const parsed = JSON.parse(raw);
         return {
           taxonomy: this.mergeTaxonomy(parsed.taxonomy),
-          posts: parsed.posts || [], // Removed hardcoded seed posts per user request
-          applications: parsed.applications || [], // Removed hardcoded demo applications
+          posts: parsed.posts || [],
+          applications: parsed.applications || [],
           adminPasswordHash: parsed.adminPasswordHash || 'admin123'
         };
-      } catch (err) {
-        console.error('Error reading database file:', err);
       }
+    } catch (err) {
+      console.error('Error reading database file:', err);
     }
+
     const defaultData: DatabaseSchema = {
       taxonomy: initialTaxonomy,
-      posts: [], // Empty default
-      applications: [], // Empty default
+      posts: [],
+      applications: [],
       adminPasswordHash: 'admin123'
     };
     this.saveLocalData(defaultData);
@@ -269,6 +288,7 @@ class UnifiedDatabaseManager {
   }
 
   private saveLocalData(data: DatabaseSchema) {
+    if (!USE_LOCAL_DB) return;
     try {
       this.ensureDirExists();
       const tempFile = `${DB_FILE}.tmp`;
