@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { initialTaxonomy } from '../lib/bdData';
-import { TuitionPost, TutorApplication, TaxonomyData, SiteStats, MonthlySummary, YearlySummary, LocationMonthlyStat, UniqueTutorRecord } from '../types';
+import { initialTaxonomy } from '../lib/bdData.js';
+import { TuitionPost, TutorApplication, TaxonomyData, SiteStats, MonthlySummary, YearlySummary, LocationMonthlyStat, UniqueTutorRecord } from '../types.js';
 
 // Local DB optional via env var, to avoid Vercel FS issues
 const USE_LOCAL_DB = process.env.USE_LOCAL_DB === 'true';

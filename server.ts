@@ -3,8 +3,8 @@ import type { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import crypto from 'crypto';
 import { createServer as createViteServer } from 'vite';
-import { db } from './src/server/db';
-import { GitHubProfile } from './src/types';
+import { db } from './src/server/db.js';
+import { GitHubProfile } from './src/types.js';
 
 // In-Memory Active Admin Sessions Map token -> { email: string, expiresAt: number }
 const activeAdminSessions = new Map<string, { email: string; expiresAt: number }>();

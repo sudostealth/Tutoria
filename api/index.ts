@@ -2,8 +2,8 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { db } from '../src/server/db';
-import { GitHubProfile } from '../src/types';
+import { db } from '../src/server/db.js';
+import { GitHubProfile } from '../src/types.js';
 
 // Use a fallback secret for development, but require one in production
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-change-in-prod';
