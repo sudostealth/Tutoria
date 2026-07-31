@@ -126,6 +126,12 @@ app.use('/api/applications/secret', strictRateLimit);
 let cachedGitHubProfile: GitHubProfile | null = null;
 let lastFetchTime = 0;
 
+// --- Middleware: Request Logger ---
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log(`[REQ] ${req.method} ${req.path}`);
+  next();
+});
+
 // --- API ROUTES ---
 
 // Health check endpoint
@@ -134,7 +140,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // 1. GitHub Profile fetch for footer credit (sudostealth)
-app.get('/api/github-profile', async (req, res) => {
+app.get('/api/github-profile', async (req, res, next) => {
   const now = Date.now();
   if (cachedGitHubProfile && now - lastFetchTime < 3600000) { // 1 hr cache
     res.json(cachedGitHubProfile);
@@ -180,18 +186,20 @@ app.get('/api/github-profile', async (req, res) => {
 });
 
 // 2. Taxonomy API
-app.get('/api/taxonomy', async (req, res) => {
+app.get('/api/taxonomy', async (req, res, next) => {
   try {
+    console.log('[GET /api/taxonomy] Request received');
     const taxonomy = await db.getTaxonomy();
+    console.log('[GET /api/taxonomy] Returning data successfully');
     res.json(taxonomy);
   } catch (err: any) {
-    console.error('Taxonomy Error:', err);
-    res.status(500).json({ error: 'Failed to retrieve taxonomy data.' });
+    console.error('[GET /api/taxonomy] Error:', err);
+    next(err);
   }
 });
 
 // Add custom taxonomy option (for custom subjects, locations, institutions)
-app.post('/api/taxonomy/add', async (req, res) => {
+app.post('/api/taxonomy/add', async (req, res, next) => {
   const { type, key, value } = sanitizeInput(req.body);
   if (!type || !value) {
     res.status(400).json({ error: 'Missing type or value' });
@@ -202,13 +210,14 @@ app.post('/api/taxonomy/add', async (req, res) => {
     res.json({ success: true, taxonomy: updated });
   } catch (err: any) {
     console.error('Taxonomy Add Error:', err);
-    res.status(500).json({ error: 'Failed to add custom dropdown option.' });
+    next(err);
   }
 });
 
 // 3. Public Posts Feed (Data Leakage Protection: Strip parent phone & secret codes for public list)
-app.get('/api/posts', async (req, res) => {
+app.get('/api/posts', async (req, res, next) => {
   try {
+    console.log('[GET /api/posts] Request received, query:', req.query);
     const {
       division,
       district,
@@ -224,6 +233,7 @@ app.get('/api/posts', async (req, res) => {
     } = req.query;
 
     let posts = await db.getAllPosts(true); // Live posts only
+    console.log(`[GET /api/posts] Fetched ${posts.length} posts from db`);
 
     if (division && division !== 'all') {
       posts = posts.filter(p => p.division.toLowerCase() === (division as string).toLowerCase());
@@ -273,16 +283,18 @@ app.get('/api/posts', async (req, res) => {
       secretCode: '' // Omitted for public list
     }));
 
+    console.log(`[GET /api/posts] Returning ${sanitizedPosts.length} posts after filtering`);
     res.json(sanitizedPosts);
   } catch (err: any) {
-    console.error('Fetch posts error:', err);
-    res.status(500).json({ error: 'Failed to fetch tuition posts.' });
+    console.error('[GET /api/posts] Error:', err);
+    next(err);
   }
 });
 
 // 4. Create Parent Tuition Request
-app.post('/api/posts', async (req, res) => {
+app.post('/api/posts', async (req, res, next) => {
   try {
+    console.log('[POST /api/posts] Request received');
     const sanitizedBody = sanitizeInput(req.body);
     const {
       parentName,
@@ -329,15 +341,16 @@ app.post('/api/posts', async (req, res) => {
       specialNote: specialNote || ''
     });
 
+    console.log('[POST /api/posts] Successfully created post');
     res.status(201).json({ success: true, post });
   } catch (err: any) {
-    console.error('Create post error:', err);
-    res.status(500).json({ error: 'Failed to create tuition post.' });
+    console.error('[POST /api/posts] Error:', err);
+    next(err);
   }
 });
 
 // 5. Check Parent Post by Secret Code
-app.post('/api/posts/secret', async (req, res) => {
+app.post('/api/posts/secret', async (req, res, next) => {
   try {
     const { secretCode } = sanitizeInput(req.body);
     if (!secretCode) {
@@ -353,12 +366,12 @@ app.post('/api/posts/secret', async (req, res) => {
     res.json(post);
   } catch (err: any) {
     console.error('Check secret post error:', err);
-    res.status(500).json({ error: 'Failed to retrieve post details.' });
+    next(err);
   }
 });
 
 // 6. Edit Parent Post by Secret Code
-app.put('/api/posts/secret', async (req, res) => {
+app.put('/api/posts/secret', async (req, res, next) => {
   try {
     const { secretCode, updates } = sanitizeInput(req.body);
     if (!secretCode || !updates) {
@@ -373,12 +386,12 @@ app.put('/api/posts/secret', async (req, res) => {
     res.json({ success: true, post: updated });
   } catch (err: any) {
     console.error('Update post error:', err);
-    res.status(500).json({ error: 'Failed to update tuition post.' });
+    next(err);
   }
 });
 
 // 7. Get Tutor Applicants for a Parent Post (requires Parent Secret Code)
-app.post('/api/posts/secret/applications', async (req, res) => {
+app.post('/api/posts/secret/applications', async (req, res, next) => {
   try {
     const { secretCode } = sanitizeInput(req.body);
     if (!secretCode) {
@@ -396,12 +409,12 @@ app.post('/api/posts/secret/applications', async (req, res) => {
     res.json({ post, applications });
   } catch (err: any) {
     console.error('Get applications error:', err);
-    res.status(500).json({ error: 'Failed to fetch applicants.' });
+    next(err);
   }
 });
 
 // 8. Accept Tutor Application (Parent action)
-app.post('/api/posts/secret/accept', async (req, res) => {
+app.post('/api/posts/secret/accept', async (req, res, next) => {
   try {
     const { secretCode, applicationId } = sanitizeInput(req.body);
     if (!secretCode || !applicationId) {
@@ -418,12 +431,12 @@ app.post('/api/posts/secret/accept', async (req, res) => {
     res.json(result);
   } catch (err: any) {
     console.error('Accept application error:', err);
-    res.status(500).json({ error: 'Failed to accept application.' });
+    next(err);
   }
 });
 
 // 9. Cancel Tutor Acceptance (Parent action)
-app.post('/api/posts/secret/cancel-accept', async (req, res) => {
+app.post('/api/posts/secret/cancel-accept', async (req, res, next) => {
   try {
     const { secretCode, applicationId } = sanitizeInput(req.body);
     if (!secretCode || !applicationId) {
@@ -440,12 +453,12 @@ app.post('/api/posts/secret/cancel-accept', async (req, res) => {
     res.json({ success });
   } catch (err: any) {
     console.error('Cancel accept error:', err);
-    res.status(500).json({ error: 'Failed to cancel application acceptance.' });
+    next(err);
   }
 });
 
 // 9b. Directly Reject Tutor Application (Parent action)
-app.post('/api/posts/secret/reject', async (req, res) => {
+app.post('/api/posts/secret/reject', async (req, res, next) => {
   try {
     const { secretCode, applicationId } = sanitizeInput(req.body);
     if (!secretCode || !applicationId) {
@@ -462,12 +475,12 @@ app.post('/api/posts/secret/reject', async (req, res) => {
     res.json({ success });
   } catch (err: any) {
     console.error('Reject app error:', err);
-    res.status(500).json({ error: 'Failed to reject application.' });
+    next(err);
   }
 });
 
 // 10. Confirm & Finalize Tuition (Parent action -> deletes post from site)
-app.post('/api/posts/secret/confirm', async (req, res) => {
+app.post('/api/posts/secret/confirm', async (req, res, next) => {
   try {
     const { secretCode, applicationId } = sanitizeInput(req.body);
     if (!secretCode || !applicationId) {
@@ -484,13 +497,14 @@ app.post('/api/posts/secret/confirm', async (req, res) => {
     res.json({ success });
   } catch (err: any) {
     console.error('Confirm final tuition error:', err);
-    res.status(500).json({ error: 'Failed to confirm tuition.' });
+    next(err);
   }
 });
 
 // 11. Tutor Apply to Post
-app.post('/api/applications', async (req, res) => {
+app.post('/api/applications', async (req, res, next) => {
   try {
+    console.log('[POST /api/applications] Request received for post ID:', req.body.postId);
     const sanitizedBody = sanitizeInput(req.body);
     const {
       postId,
@@ -529,15 +543,16 @@ app.post('/api/applications', async (req, res) => {
       experience
     });
 
+    console.log('[POST /api/applications] Application created successfully');
     res.status(201).json({ success: true, application: appData });
   } catch (err: any) {
-    console.error('Submit application error:', err);
-    res.status(500).json({ error: 'Failed to submit application.' });
+    console.error('[POST /api/applications] Error:', err);
+    next(err);
   }
 });
 
 // 12. Tutor Check Application Status by Secret Code
-app.post('/api/applications/secret', async (req, res) => {
+app.post('/api/applications/secret', async (req, res, next) => {
   try {
     const { secretCode } = sanitizeInput(req.body);
     if (!secretCode) {
@@ -584,25 +599,27 @@ app.post('/api/applications/secret', async (req, res) => {
     });
   } catch (err: any) {
     console.error('Get application by secret error:', err);
-    res.status(500).json({ error: 'Failed to retrieve application status.' });
+    next(err);
   }
 });
 
 // 13. Site Stats API
-app.get('/api/stats', async (req, res) => {
+app.get('/api/stats', async (req, res, next) => {
   try {
+    console.log('[GET /api/stats] Request received');
     const stats = await db.getSiteStats();
+    console.log('[GET /api/stats] Returning stats successfully');
     res.json(stats);
   } catch (err: any) {
-    console.error('Get stats error:', err);
-    res.status(500).json({ error: 'Failed to retrieve site statistics.' });
+    console.error('[GET /api/stats] Error:', err);
+    next(err);
   }
 });
 
 // 14. Admin Endpoints
 
 // Admin Login with Email + Password & Supabase Auth Verification
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/login', async (req, res, next) => {
   try {
     const { email, password } = sanitizeInput(req.body);
 
@@ -658,55 +675,70 @@ app.post('/api/admin/login', async (req, res) => {
     });
   } catch (err: any) {
     console.error('Admin Login Error:', err);
-    res.status(500).json({ error: 'Admin login failed due to a server error.' });
+    next(err);
   }
 });
 
 // Protected: Pending Posts list for Admin
-app.get('/api/admin/pending-posts', requireAdminAuth, async (req, res) => {
+app.get('/api/admin/pending-posts', requireAdminAuth, async (req, res, next) => {
   try {
     const posts = await db.getPendingPosts();
     res.json(posts);
   } catch (err: any) {
     console.error('Admin pending posts error:', err);
-    res.status(500).json({ error: 'Failed to fetch pending posts.' });
+    next(err);
   }
 });
 
 // Protected: Approve post
-app.post('/api/admin/approve-post', requireAdminAuth, async (req, res) => {
+app.post('/api/admin/approve-post', requireAdminAuth, async (req, res, next) => {
   try {
     const { id } = sanitizeInput(req.body);
     const success = await db.approvePost(id);
     res.json({ success });
   } catch (err: any) {
     console.error('Admin approve post error:', err);
-    res.status(500).json({ error: 'Failed to approve post.' });
+    next(err);
   }
 });
 
 // Protected: Reject post
-app.post('/api/admin/reject-post', requireAdminAuth, async (req, res) => {
+app.post('/api/admin/reject-post', requireAdminAuth, async (req, res, next) => {
   try {
     const { id } = sanitizeInput(req.body);
     const success = await db.rejectPost(id);
     res.json({ success });
   } catch (err: any) {
     console.error('Admin reject post error:', err);
-    res.status(500).json({ error: 'Failed to reject post.' });
+    next(err);
   }
 });
 
 // Protected: Recover secret code
-app.post('/api/admin/recover-code', requireAdminAuth, async (req, res) => {
+app.post('/api/admin/recover-code', requireAdminAuth, async (req, res, next) => {
   try {
     const { query, type } = sanitizeInput(req.body);
     const result = await db.recoverSecretCode(query, type);
     res.json(result);
   } catch (err: any) {
     console.error('Admin recover code error:', err);
-    res.status(500).json({ error: 'Failed to recover secret code.' });
+    next(err);
   }
+});
+
+// Global Error Handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error(`[Global Error Handler] ${req.method} ${req.path}:`, err);
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  res.status(500).json({
+    success: false,
+    message: err.message || 'Internal Server Error',
+    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack
+  });
 });
 
 // Export the app for Vercel Serverless
