@@ -74,8 +74,11 @@ function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
     const payload = jwt.verify(token, JWT_SECRET) as { email: string };
 
     // Enforce configured Admin Email verification
-    const configAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL);
-    if (configAdminEmail && payload.email !== configAdminEmail.trim().toLowerCase()) {
+    const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+    const viteAdminEmail = process.env.VITE_ADMIN_EMAIL?.trim().toLowerCase();
+    const validEmails = [adminEmail, viteAdminEmail].filter(Boolean);
+
+    if (validEmails.length > 0 && !validEmails.includes(payload.email)) {
        res.status(401).json({ error: 'Unauthorized. Token email does not match admin email.' });
        return;
     }
@@ -629,10 +632,12 @@ app.post('/api/admin/login', async (req, res, next) => {
     }
 
     // Enforce configured Admin Email verification
-    const configAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL);
+    const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+    const viteAdminEmail = process.env.VITE_ADMIN_EMAIL?.trim().toLowerCase();
+    const validEmails = [adminEmail, viteAdminEmail].filter(Boolean);
     const providedEmail = email.trim().toLowerCase();
 
-    if (configAdminEmail && providedEmail !== configAdminEmail.trim().toLowerCase()) {
+    if (validEmails.length > 0 && !validEmails.includes(providedEmail)) {
       res.status(401).json({ error: 'Unauthorized login attempt. Admin email does not match system configuration.' });
       return;
     }

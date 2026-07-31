@@ -75,8 +75,11 @@ function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({ error: 'Unauthorized. Session expired or invalid.' });
   }
 
-  const configAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL);
-  if (configAdminEmail && session.email !== configAdminEmail.trim().toLowerCase()) {
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const viteAdminEmail = process.env.VITE_ADMIN_EMAIL?.trim().toLowerCase();
+  const validEmails = [adminEmail, viteAdminEmail].filter(Boolean);
+
+  if (validEmails.length > 0 && !validEmails.includes(session.email)) {
     return res.status(401).json({ error: 'Unauthorized. Token email does not match admin email.' });
   }
 
@@ -554,10 +557,12 @@ async function startServer() {
       }
 
       // Enforce configured Admin Email verification if present
-      const configAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL);
+      const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+      const viteAdminEmail = process.env.VITE_ADMIN_EMAIL?.trim().toLowerCase();
+      const validEmails = [adminEmail, viteAdminEmail].filter(Boolean);
       const providedEmail = email.trim().toLowerCase();
 
-      if (configAdminEmail && providedEmail !== configAdminEmail.trim().toLowerCase()) {
+      if (validEmails.length > 0 && !validEmails.includes(providedEmail)) {
         return res.status(401).json({ error: 'Unauthorized login attempt. Admin email does not match system configuration.' });
       }
 
