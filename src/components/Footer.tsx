@@ -105,9 +105,11 @@ export const Footer: React.FC<FooterProps> = ({ language, onOpenPrivacyPolicy })
           {/* Left Brand Info & Links */}
           <div className="space-y-1.5 text-center md:text-left">
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-              <div className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-extrabold text-xs shadow-xs">
-                T
-              </div>
+              <img
+                src="/tutoria_logo_animated.svg"
+                alt="Tutoria Logo"
+                className="h-8 w-auto object-contain"
+              />
               <span className="text-sm font-bold text-slate-900">
                 © {new Date().getFullYear()} Tutoria
               </span>

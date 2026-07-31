@@ -35,7 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-8 h-16 flex items-center justify-between shrink-0 shadow-xs transition-all">
+    <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 sm:px-8 h-20 flex items-center justify-between shrink-0 shadow-xs transition-all">
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
         
         {/* Brand logo & name */}
@@ -43,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => { setActiveTab('home'); setMobileMenuOpen(false); }}
-          className="flex items-center cursor-pointer group h-10"
+          className="flex items-center cursor-pointer group h-16"
         >
           <img
             src="/tutoria_logo_animated.svg"
@@ -168,7 +168,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden absolute top-16 left-0 right-0 bg-white border-b border-slate-200 shadow-xl px-4 py-4 space-y-2 z-50 overflow-hidden"
+            className="lg:hidden absolute top-20 left-0 right-0 bg-white border-b border-slate-200 shadow-xl px-4 py-4 space-y-2 z-50 overflow-hidden"
           >
             {onOpenCalculator && (
               <button
