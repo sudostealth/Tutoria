@@ -1,0 +1,56 @@
+<svg width="620" height="170" viewBox="0 0 620 170" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0C2430"/>
+      <stop offset="100%" stop-color="#123B36"/>
+    </linearGradient>
+    <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22D3A6"/>
+      <stop offset="100%" stop-color="#0EA96F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ICON MARK -->
+  <g transform="translate(10,10)">
+    <rect x="0" y="0" width="150" height="150" rx="36" fill="url(#bgGrad)"/>
+
+    <!-- connecting arc, animated draw-in loop -->
+    <path d="M47,58 Q75,26 103,58" fill="none" stroke="url(#arcGrad)" stroke-width="10"
+          stroke-linecap="round" stroke-dasharray="70" stroke-dashoffset="70">
+      <animate attributeName="stroke-dashoffset" values="70;0;0;70" keyDur="4s"
+               dur="4s" repeatCount="indefinite" keyTimes="0;0.35;0.85;1"/>
+    </path>
+
+    <!-- T stem -->
+    <rect x="68" y="54" width="11" height="62" rx="5.5" fill="#EAFBF4"/>
+
+    <!-- guardian node (left) -->
+    <circle cx="47" cy="58" r="11.5" fill="#EAFBF4"/>
+    <circle cx="47" cy="58" r="4.5" fill="#0EA96F"/>
+
+    <!-- tutor node (right) with gentle pulse -->
+    <circle cx="103" cy="58" r="11.5" fill="#EAFBF4"/>
+    <circle cx="103" cy="58" r="4.5" fill="#0EA96F"/>
+    <circle cx="103" cy="58" r="11.5" fill="none" stroke="#22D3A6" stroke-width="2" opacity="0">
+      <animate attributeName="r" values="11.5;22;11.5" dur="2.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.55;0;0" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- WORDMARK -->
+  <g transform="translate(180,0)">
+    <text x="0" y="88" font-family="'Poppins','Segoe UI',Arial,sans-serif" font-weight="700"
+          font-size="58" fill="#0EA96F" letter-spacing="0.5">
+      Tutoria
+    </text>
+    <text x="3" y="115" font-family="'Segoe UI',Arial,sans-serif" font-weight="600"
+          font-size="16" fill="#7C93A0" letter-spacing="3.5">
+      TUTORIA BANGLADESH
+    </text>
+    <!-- animated underline sweep -->
+    <rect x="0" y="126" width="0" height="4" rx="2" fill="#0EA96F">
+      <animate attributeName="width" values="0;250;250;0" keyDur="4s" dur="4s"
+               repeatCount="indefinite" keyTimes="0;0.35;0.85;1"/>
+    </rect>
+  </g>
+</svg>
