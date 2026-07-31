@@ -1,5 +1,42 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Bornomala', 'Sohid Osman Hadi', 'SohidOsmanHadi', 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Sabina Shorolipi', 'Sohid Osman Hadi', 'SohidOsmanHadi', 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+@font-face {
+  font-family: 'Bornomala';
+  src: url('/fonts/Bornomala-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bornomala';
+  src: url('/fonts/Bornomala-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sabina Shorolipi';
+  src: url('/fonts/SabinaShorolipi-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sabina Shorolipi';
+  src: url('/fonts/SabinaShorolipi-Italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
 @font-face {
   font-family: 'Sohid Osman Hadi';
   src: local('Sohid Osman Hadi'), local('SohidOsmanHadi'), local('Sohid-Osman-Hadi'), local('Shahid Osman Hadi'),
@@ -22,8 +59,11 @@
 
 @layer base {
   body {
-    font-family: 'Sohid Osman Hadi', 'SohidOsmanHadi', 'Shahid Osman Hadi', 'Anek Bangla', 'Hind Siliguri', 'Noto Sans Bengali', 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-sans);
     letter-spacing: -0.01em;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
   }
 }
 
@@ -48,7 +88,7 @@
 
 /* Leaflet map custom fixes */
 .leaflet-container {
-  font-family: 'Sohid Osman Hadi', 'SohidOsmanHadi', 'Anek Bangla', 'Hind Siliguri', 'Outfit', sans-serif !important;
+  font-family: var(--font-sans) !important;
   z-index: 10;
   border-radius: 0.75rem;
 }
