@@ -1,4 +1,4 @@
-import { TaxonomyData } from '../types';
+import { TaxonomyData } from '../types.js';
 
 export const initialTaxonomy: TaxonomyData = {
   divisions: [
