@@ -4,9 +4,19 @@
   "description": "Tutoria is Bangladesh's 100% free, zero-commission tuition and tutor matching platform.",
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "/tutoria_favicon.svg",
       "type": "image/svg+xml",
       "sizes": "512x512 192x192 96x96 48x48"
+    },
+    {
+      "src": "/favicon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/favicon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
   ],
   "start_url": "/",
