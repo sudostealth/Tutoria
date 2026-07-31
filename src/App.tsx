@@ -22,7 +22,7 @@ import { ToastContainer, ToastItem } from './components/Toast';
 
 export default function App() {
   const [language, setLanguage] = useState<Language>('bn');
-  const [activeTab, setActiveTab] = useState<'home' | 'browse' | 'post' | 'track' | 'how' | 'faq' | 'admin'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'browse' | 'post' | 'track' | 'how' | 'faq'>('home');
 
   // Taxonomy & Stats Data
   const [taxonomy, setTaxonomy] = useState<TaxonomyData | null>(null);
@@ -148,30 +148,6 @@ export default function App() {
     fetchStats(true);
   }, []);
 
-  // Detect secret admin URL slug (e.g. /x-admin-control)
-  useEffect(() => {
-    const adminSlug = (import.meta.env.VITE_ADMIN_SLUG || 'x-admin-control').replace(/^\//, '').trim().toLowerCase();
-
-    const checkAdminRoute = () => {
-      const currentPath = window.location.pathname.replace(/^\//, '').trim().toLowerCase();
-      const currentHash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase();
-      const searchParams = new URLSearchParams(window.location.search);
-      const adminQuery = searchParams.get('admin')?.toLowerCase();
-
-      if (currentPath === adminSlug || currentHash === adminSlug || adminQuery === adminSlug) {
-        setActiveTab('admin');
-      }
-    };
-
-    checkAdminRoute();
-    window.addEventListener('popstate', checkAdminRoute);
-    window.addEventListener('hashchange', checkAdminRoute);
-    return () => {
-      window.removeEventListener('popstate', checkAdminRoute);
-      window.removeEventListener('hashchange', checkAdminRoute);
-    };
-  }, []);
-
   const handleLanguageToggle = () => {
     setLanguage(prev => (prev === 'bn' ? 'en' : 'bn'));
   };
@@ -211,7 +187,6 @@ export default function App() {
             setActiveTab(tab);
           }
         }}
-        onOpenAdmin={() => setActiveTab('admin')}
         onOpenCalculator={() => setSalaryCalcModalOpen(true)}
         deferredPwaPrompt={deferredPwaPrompt}
         onInstallPwa={handleInstallPwa}
@@ -292,16 +267,6 @@ export default function App() {
             onBrowseClick={() => setActiveTab('browse')}
             onTrackClick={() => setActiveTab('track')}
           />
-        )}
-
-        {activeTab === 'admin' && (
-          <div className="max-w-4xl mx-auto p-4 md:p-6 lg:py-8">
-            <AdminPanel
-              language={language}
-              taxonomy={taxonomy}
-              onRefreshTaxonomy={fetchTaxonomy}
-            />
-          </div>
         )}
       </main>
 

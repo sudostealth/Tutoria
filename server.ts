@@ -2,6 +2,9 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import crypto from 'crypto';
+import fs from 'fs/promises';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { createServer as createViteServer } from 'vite';
 import { db } from './src/server/db.js';
 import { GitHubProfile } from './src/types.js';
@@ -89,6 +92,24 @@ function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // Security headers (helmet) - skip strict CSP to prevent inline script issues; can be hardened later
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  }));
+
+  // Rate Limiting for API routes
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200, // limit each IP to 200 requests per windowMs
+    message: { error: 'Too many requests from this IP, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  // Apply rate limiter to all API routes
+  app.use('/api', apiLimiter);
 
   // 1. Strict Payload Size & JSON Parsing
   app.use(express.json({ limit: '100kb' }));
@@ -651,12 +672,31 @@ async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'mpa',
     });
+
+    // Serve admin page explicitly via Vite dev server
+    app.get('/admin', async (req, res, next) => {
+      try {
+        const url = req.originalUrl;
+        const template = await fs.readFile(path.resolve(process.cwd(), 'admin.html'), 'utf-8');
+        const html = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
+
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
+
+    app.get('/admin', (req, res) => {
+      res.sendFile(path.join(distPath, 'admin.html'));
+    });
+
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });

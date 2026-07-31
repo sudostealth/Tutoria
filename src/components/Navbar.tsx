@@ -7,9 +7,8 @@ import { Key, Globe, Menu, X, PlusCircle, Search, HelpCircle, ShieldCheck, Gradu
 interface NavbarProps {
   language: Language;
   onLanguageToggle: () => void;
-  activeTab: 'home' | 'browse' | 'post' | 'track' | 'how' | 'faq' | 'admin';
-  setActiveTab: (tab: 'home' | 'browse' | 'post' | 'track' | 'how' | 'faq' | 'admin') => void;
-  onOpenAdmin: () => void;
+  activeTab: 'home' | 'browse' | 'post' | 'track' | 'how' | 'faq';
+  setActiveTab: (tab: 'home' | 'browse' | 'post' | 'track' | 'how' | 'faq') => void;
   onOpenCalculator?: () => void;
   deferredPwaPrompt?: any;
   onInstallPwa?: () => void;
@@ -20,7 +19,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLanguageToggle,
   activeTab,
   setActiveTab,
-  onOpenAdmin,
   onOpenCalculator,
   deferredPwaPrompt,
   onInstallPwa
@@ -221,19 +219,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {item.label}
               </button>
             ))}
-
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-              <button
-                onClick={() => {
-                  onOpenAdmin();
-                  setMobileMenuOpen(false);
-                }}
-                className="text-xs font-bold text-slate-500 hover:text-emerald-700 flex items-center gap-1.5 py-2 px-1"
-              >
-                <Lock className="w-3.5 h-3.5" />
-                <span>Admin Moderation</span>
-              </button>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
