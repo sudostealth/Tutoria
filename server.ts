@@ -75,6 +75,11 @@ function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({ error: 'Unauthorized. Session expired or invalid.' });
   }
 
+  const configAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL);
+  if (configAdminEmail && session.email !== configAdminEmail.trim().toLowerCase()) {
+    return res.status(401).json({ error: 'Unauthorized. Token email does not match admin email.' });
+  }
+
   next();
 }
 
@@ -548,32 +553,29 @@ async function startServer() {
         return res.status(400).json({ error: 'Email and password are required.' });
       }
 
-      // Enforce configured Admin Email verification
-      const configAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || 'admin@tutoria.bd').trim().toLowerCase();
+      // Enforce configured Admin Email verification if present
+      const configAdminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL);
       const providedEmail = email.trim().toLowerCase();
 
-      if (providedEmail !== configAdminEmail) {
+      if (configAdminEmail && providedEmail !== configAdminEmail.trim().toLowerCase()) {
         return res.status(401).json({ error: 'Unauthorized login attempt. Admin email does not match system configuration.' });
       }
 
       const supabase = db.getSupabase();
-      if (supabase) {
-        // Authenticate user with Supabase Auth Engine
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-          email: providedEmail,
-          password
-        });
+      if (!supabase) {
+        return res.status(500).json({ error: 'Supabase must be configured for admin authentication.' });
+      }
 
-        if (authError || !authData.user) {
-          return res.status(401).json({
-            error: authError ? authError.message : 'Invalid Supabase admin credentials.'
-          });
-        }
-      } else {
-        // Fallback for local environment before Supabase keys are configured
-        if (!db.verifyAdminPassword(password)) {
-          return res.status(401).json({ error: 'Invalid admin password.' });
-        }
+      // Authenticate user with Supabase Auth Engine
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: providedEmail,
+        password
+      });
+
+      if (authError || !authData.user) {
+        return res.status(401).json({
+          error: authError ? authError.message : 'Invalid admin credentials.'
+        });
       }
 
       // Issue cryptographically secure session token

@@ -955,7 +955,7 @@ class UnifiedDatabaseManager {
 
   // --- SITE STATS ---
   async getSiteStats(): Promise<SiteStats> {
-    const allPosts = await this.getAllPosts(false);
+    const allPosts = await this.getAllPosts(true);
     const totalPosts = allPosts.length;
 
     // 1. Calculate Unique Tutors Connected
