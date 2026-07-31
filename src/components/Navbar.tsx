@@ -43,19 +43,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => { setActiveTab('home'); setMobileMenuOpen(false); }}
-          className="flex items-center space-x-3 cursor-pointer group"
+          className="flex items-center cursor-pointer group h-10"
         >
-          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md group-hover:bg-emerald-700 transition-all duration-300 group-hover:rotate-3">
-            T
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-base sm:text-lg font-black leading-none text-slate-900 group-hover:text-emerald-700 transition-colors tracking-tight">
-              {getTranslation(language, 'siteName')}
-            </h1>
-            <span className="text-[10px] sm:text-xs text-slate-500 uppercase tracking-wider font-extrabold mt-0.5">
-              Tutoria Bangladesh
-            </span>
-          </div>
+          <img
+            src="/tutoria_logo_animated.svg"
+            alt="Tutoria Logo"
+            className="h-full w-auto object-contain"
+          />
         </motion.div>
 
         {/* Desktop Nav Links */}
