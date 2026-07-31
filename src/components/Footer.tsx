@@ -54,7 +54,7 @@ export const Footer: React.FC<FooterProps> = ({ language, onOpenPrivacyPolicy })
               
               {/* Channel Link */}
               <a
-                href="https://t.me/tutoriaf"
+                href="https://t.me/tutoriabd"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto px-5 py-3 bg-white hover:bg-sky-50 text-sky-700 font-extrabold text-xs sm:text-sm rounded-2xl shadow-md transition-all duration-300 hover:scale-105 hover:-translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer border border-white"
