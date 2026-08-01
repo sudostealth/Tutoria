@@ -4,8 +4,8 @@ export type TuitionType = 'Offline' | 'Online' | 'Mixed';
 export type GenderPreference = 'Male' | 'Female' | 'Any';
 export type EducationMedium = 'Bangla' | 'English' | 'English Version' | 'Madrasa';
 
-export type PostStatus = 'pending' | 'live' | 'edited_pending' | 'completed' | 'rejected';
-export type ApplicationStatus = 'pending' | 'accepted' | 'confirmed' | 'rejected';
+export type PostStatus = 'pending' | 'live' | 'edited_pending' | 'completed' | 'rejected' | 'trial' | 'accepted';
+export type ApplicationStatus = 'pending' | 'accepted' | 'confirmed' | 'rejected' | 'trial' | 'rejected_from_trial';
 
 export interface LocationCoords {
   lat: number;
