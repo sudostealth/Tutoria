@@ -745,21 +745,25 @@ class UnifiedDatabaseManager {
 
       if (this.supabase) {
         try {
-          await this.supabase.from('applications').update({
+          const { error } = await this.supabase.from('applications').update({
             status: a.status,
             accepted_at: a.acceptedAt || null
           }).eq('id', a.id);
+          if (error) throw new Error(error.message);
         } catch (e) {
           console.warn('Supabase acceptApplication error:', e);
+          throw e;
         }
       }
     }
 
     if (this.supabase) {
       try {
-        await this.supabase.from('posts').update({ status: 'trial' }).eq('id', postId);
+        const { error } = await this.supabase.from('posts').update({ status: 'trial' }).eq('id', postId);
+        if (error) throw new Error(error.message);
       } catch (e) {
         console.warn('Supabase update post to trial error:', e);
+        throw e;
       }
     }
 
@@ -793,13 +797,17 @@ class UnifiedDatabaseManager {
 
     if (this.supabase) {
       try {
-        await this.supabase.from('applications').update({
+        const { error: err1 } = await this.supabase.from('applications').update({
           status: 'rejected_from_trial',
           accepted_at: null
         }).eq('id', applicationId);
-        await this.supabase.from('posts').update({ status: 'live' }).eq('id', postId);
+        if (err1) throw new Error(err1.message);
+
+        const { error: err2 } = await this.supabase.from('posts').update({ status: 'live' }).eq('id', postId);
+        if (err2) throw new Error(err2.message);
       } catch (e) {
         console.warn('Supabase rejectApplicationFromTrial error:', e);
+        throw e;
       }
     }
 
@@ -826,12 +834,14 @@ class UnifiedDatabaseManager {
 
     if (this.supabase) {
       try {
-        await this.supabase.from('applications').update({
+        const { error } = await this.supabase.from('applications').update({
           status: 'rejected',
           accepted_at: null
         }).eq('id', applicationId);
+        if (error) throw new Error(error.message);
       } catch (e) {
         console.warn('Supabase rejectApplication error:', e);
+        throw e;
       }
     }
 
@@ -855,21 +865,25 @@ class UnifiedDatabaseManager {
 
       if (this.supabase) {
         try {
-          await this.supabase.from('applications').update({
+          const { error } = await this.supabase.from('applications').update({
             status: 'pending',
             accepted_at: null
           }).eq('id', a.id);
+          if (error) throw new Error(error.message);
         } catch (e) {
           console.warn('Supabase cancelApplicationAcceptance error:', e);
+          throw e;
         }
       }
     }
 
     if (this.supabase) {
       try {
-        await this.supabase.from('posts').update({ status: 'live' }).eq('id', postId);
+        const { error } = await this.supabase.from('posts').update({ status: 'live' }).eq('id', postId);
+        if (error) throw new Error(error.message);
       } catch (e) {
         console.warn('Supabase update post to live error:', e);
+        throw e;
       }
     }
 
@@ -890,10 +904,18 @@ class UnifiedDatabaseManager {
   async confirmTuitionFinal(postId: string, applicationId: string): Promise<boolean> {
     if (this.supabase) {
       try {
-        await this.supabase.from('applications').update({ status: 'confirmed' }).eq('id', applicationId);
-        await this.supabase.from('posts').delete().eq('id', postId);
+        const { error: err1 } = await this.supabase.from('applications').update({ status: 'confirmed' }).eq('id', applicationId);
+        if (err1) throw new Error(err1.message);
+
+        // Before deleting the post, set post_id to null for all applications referencing it to satisfy FK constraints
+        const { error: err2 } = await this.supabase.from('applications').update({ post_id: null }).eq('post_id', postId);
+        if (err2) throw new Error(err2.message);
+
+        const { error: err3 } = await this.supabase.from('posts').delete().eq('id', postId);
+        if (err3) throw new Error(err3.message);
       } catch (e) {
         console.warn('Supabase confirmTuitionFinal error:', e);
+        throw e;
       }
     }
 
