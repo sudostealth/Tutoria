@@ -676,7 +676,8 @@ async function startServer() {
     });
 
     // Serve admin page explicitly via Vite dev server
-    app.get('/admin', async (req, res, next) => {
+    const adminRoute = process.env.VITE_ADMIN_SLUG || '/admin';
+    app.get(adminRoute, async (req, res, next) => {
       try {
         const url = req.originalUrl;
         const template = await fs.readFile(path.resolve(process.cwd(), 'admin.html'), 'utf-8');
@@ -693,7 +694,8 @@ async function startServer() {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
 
-    app.get('/admin', (req, res) => {
+    const adminRoute = process.env.VITE_ADMIN_SLUG || '/admin';
+    app.get(adminRoute, (req, res) => {
       res.sendFile(path.join(distPath, 'admin.html'));
     });
 
