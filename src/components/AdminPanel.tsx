@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Language, TuitionPost, TaxonomyData, SiteStats } from '../types';
 import { getTranslation } from '../lib/i18n';
-import { ShieldCheck, Lock, CheckCircle, XCircle, Search, Key, Database, BarChart3, RefreshCw, X, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Lock, CheckCircle, XCircle, Search, Key, Database, BarChart3, RefreshCw, X, AlertCircle, ExternalLink } from 'lucide-react';
+import { TrackCodeView } from './TrackCodeView';
 
 interface AdminPanelProps {
   language: Language;
@@ -29,6 +30,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [recoveryQuery, setRecoveryQuery] = useState('');
   const [recoveryType, setRecoveryType] = useState<'parent' | 'tutor'>('parent');
   const [recoveryResults, setRecoveryResults] = useState<{ posts?: TuitionPost[]; applications?: any[] }>({});
+  const [manageCode, setManageCode] = useState<string | null>(null);
 
   // Site Stats
   const [stats, setStats] = useState<SiteStats | null>(null);
@@ -444,9 +446,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <span className="font-bold text-slate-900">{p.parentName} ({p.parentPhone})</span>
                             <span className="text-slate-500 block">{p.studentClass} — {p.thana}</span>
                           </div>
-                          <span className="px-3 py-1 font-mono font-black bg-amber-100 text-amber-900 rounded-lg text-sm">
-                            {p.secretCode}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="px-3 py-1 font-mono font-black bg-amber-100 text-amber-900 rounded-lg text-sm">
+                              {p.secretCode}
+                            </span>
+                            <button
+                              onClick={() => setManageCode(p.secretCode)}
+                              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              Manage
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -461,11 +472,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <span className="font-bold text-slate-900">{a.tutorName} ({a.tutorPhone})</span>
                             <span className="text-slate-500 block">{a.institution || a.completedDegree}</span>
                           </div>
-                          <span className="px-3 py-1 font-mono font-black bg-amber-100 text-amber-900 rounded-lg text-sm">
-                            {a.secretCode}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="px-3 py-1 font-mono font-black bg-amber-100 text-amber-900 rounded-lg text-sm">
+                              {a.secretCode}
+                            </span>
+                            <button
+                              onClick={() => setManageCode(a.secretCode)}
+                              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              View Status
+                            </button>
+                          </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {manageCode && (
+                    <div className="mt-6 border-t pt-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-bold text-slate-900">Manage Actions for {manageCode}</h4>
+                        <button
+                          onClick={() => setManageCode(null)}
+                          className="px-3 py-1 bg-slate-200 hover:bg-slate-300 rounded text-xs font-bold"
+                        >
+                          Close
+                        </button>
+                      </div>
+                      <div className="bg-slate-100 p-2 rounded-xl">
+                        <TrackCodeView language={language} initialCode={manageCode} />
+                      </div>
                     </div>
                   )}
                 </div>

@@ -127,8 +127,8 @@ export const translations = {
     step1Desc: 'কোনো আইডি খোলা বা পাসওয়ার্ড মনে রাখার ঝামেলা নেই। সার্ভিস চার্জ সম্পূর্ণ ০ টাকা।',
     step2Title: '২. ইউনিক গোপন কোড',
     step2Desc: 'পোস্ট বা আবেদনের পর একটি সিক্রেট কোড পাওয়া যাবে। এটি দিয়ে পরবর্তীতে এক্সেস পাবেন।',
-    step3Title: '৩. এডমিন অনুমোদন ও সংযোগ',
-    step3Desc: 'তথ্য যাচাই করে পোস্ট এপ্রুভ হয়। অভিভাবক পছন্দ করলে সরাসরি কল করে নিশ্চিত করতে পারেন।',
+    step3Title: '৩. ট্রায়াল পিরিয়ড ও চূড়ান্তকরণ',
+    step3Desc: 'অভিভাবক টিউটরকে প্রথমে ট্রায়ালের জন্য সিলেক্ট করবেন। ৫ ঘণ্টা পর নাম্বার দেখা যাবে। ট্রায়াল শেষে চূড়ান্ত বা বাতিল করতে পারবেন।',
     
     // Footer & GitHub
     devCredit: 'ডেভেলপার পরিচিতি',
@@ -281,8 +281,8 @@ export const translations = {
     step1Desc: 'Zero fees and zero account passwords. Connecting parents and teachers without middlemen.',
     step2Title: '2. Unique Secret Codes',
     step2Desc: 'Every post and application receives a unique secret code for management and tracking.',
-    step3Title: '3. Admin Review & Direct Call',
-    step3Desc: 'Admin moderates listings. When accepted, parents and tutors connect directly via phone.',
+    step3Title: '3. Trial Period & Final Confirmation',
+    step3Desc: 'Parents accept tutors for a trial. Phone numbers are exchanged after 5 hours. After the trial class, parents can confirm or reject the tutor.',
     
     // Footer & GitHub
     devCredit: 'Developer Profile',

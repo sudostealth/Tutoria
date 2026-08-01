@@ -43,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => { setActiveTab('home'); setMobileMenuOpen(false); }}
-          className="flex items-center cursor-pointer group h-10"
+          className="flex items-center cursor-pointer group h-20"
         >
           <img
             src="/tutoria_logo_animated.svg"

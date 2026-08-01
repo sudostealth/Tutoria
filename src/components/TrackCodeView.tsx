@@ -6,12 +6,20 @@ import { TuitionDetailModal } from './TuitionDetailModal';
 
 interface TrackCodeViewProps {
   language: Language;
+  initialCode?: string;
 }
 
-export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
-  const [secretCode, setSecretCode] = useState('');
+export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language, initialCode }) => {
+  const [secretCode, setSecretCode] = useState(initialCode || '');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    if (initialCode) {
+      setSecretCode(initialCode);
+      handleLookup(initialCode);
+    }
+  }, [initialCode]);
 
   // Loaded result state
   const [postData, setPostData] = useState<TuitionPost | null>(null);
@@ -47,7 +55,7 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
     }
 
     try {
-      if (code.startsWith('FTM-P-')) {
+      if (code.startsWith('TUTR-P-') || code.startsWith('FTM-P-')) {
         // Parent lookup
         const res = await fetch('/api/posts/secret/applications', {
           method: 'POST',
@@ -61,7 +69,7 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
         } else if (!silentRefresh) {
           setErrorMsg(data.error || getTranslation(language, 'invalidCodeMsg'));
         }
-      } else if (code.startsWith('FTM-T-')) {
+      } else if (code.startsWith('TUTR-T-') || code.startsWith('FTM-T-')) {
         // Tutor lookup
         const res = await fetch('/api/applications/secret', {
           method: 'POST',
@@ -127,6 +135,30 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
         await handleLookup(postData.secretCode, true);
       } else {
         alert(data.error || 'টিউটর সিলেক্ট করতে সমস্যা হয়েছে');
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert('ত্রুটি: ' + err.message);
+    } finally {
+      setActionLoadingAppId(null);
+    }
+  };
+
+  // Parent Action: Reject From Trial
+  const handleRejectFromTrial = async (appId: string) => {
+    if (!postData) return;
+    setActionLoadingAppId(appId);
+    try {
+      const res = await fetch('/api/posts/secret/reject-trial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secretCode: postData.secretCode, applicationId: appId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await handleLookup(postData.secretCode, true);
+      } else {
+        alert(data.error || 'ট্রায়াল বাতিল করতে সমস্যা হয়েছে');
       }
     } catch (err: any) {
       console.error(err);
@@ -248,57 +280,73 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       
       {/* Title */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
-        <div>
-          <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 flex items-center gap-2">
-            <Key className="w-6 h-6 text-amber-500" />
-            <span>{getTranslation(language, 'trackTitle')}</span>
-          </h2>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
-            {getTranslation(language, 'trackSub')}
-          </p>
-        </div>
-
-        {/* Input & Lookup Button */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            value={secretCode}
-            onChange={e => setSecretCode(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleLookup()}
-            placeholder={getTranslation(language, 'inputSecretPlaceholder')}
-            className="flex-1 px-4 py-3 text-sm font-mono font-bold bg-slate-50 border border-slate-300 rounded-xl outline-none focus:border-amber-500 uppercase tracking-widest"
-          />
-          <button
-            onClick={() => handleLookup()}
-            disabled={loading}
-            className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-colors"
-          >
-            {loading ? (
-              <span>চেক হচ্ছে...</span>
-            ) : (
-              <>
-                <Search className="w-4 h-4" />
-                <span>{getTranslation(language, 'btnCheckStatus')}</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        {errorMsg && (
-          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-xl flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{errorMsg}</span>
+      {!initialCode && (
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+          <div>
+            <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+              <Key className="w-6 h-6 text-amber-500" />
+              <span>{getTranslation(language, 'trackTitle')}</span>
+            </h2>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              {getTranslation(language, 'trackSub')}
+            </p>
           </div>
-        )}
 
-        {successNotice && (
-          <div className="p-4 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span>{successNotice}</span>
+          {/* Input & Lookup Button */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={secretCode}
+              onChange={e => setSecretCode(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleLookup()}
+              placeholder={getTranslation(language, 'inputSecretPlaceholder')}
+              className="flex-1 px-4 py-3 text-sm font-mono font-bold bg-slate-50 border border-slate-300 rounded-xl outline-none focus:border-amber-500 uppercase tracking-widest"
+            />
+            <button
+              onClick={() => handleLookup()}
+              disabled={loading}
+              className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-colors"
+            >
+              {loading ? (
+                <span>চেক হচ্ছে...</span>
+              ) : (
+                <>
+                  <Search className="w-4 h-4" />
+                  <span>{getTranslation(language, 'btnCheckStatus')}</span>
+                </>
+              )}
+            </button>
           </div>
-        )}
-      </div>
+
+          {errorMsg && (
+            <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-xl flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          {successNotice && (
+            <div className="p-4 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>{successNotice}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {initialCode && errorMsg && (
+        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-xl flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
+      {initialCode && successNotice && (
+        <div className="p-4 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+          <span>{successNotice}</span>
+        </div>
+      )}
 
       {/* --- PARENT VIEW --- */}
       {postData && (
@@ -368,9 +416,9 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
                   <div
                     key={app.id}
                     className={`p-4 rounded-xl border transition-all ${
-                      app.status === 'accepted'
+                      app.status === 'trial' || app.status === 'accepted'
                         ? 'bg-emerald-50/80 border-emerald-400'
-                        : app.status === 'rejected'
+                        : app.status === 'rejected' || app.status === 'rejected_from_trial'
                         ? 'bg-rose-50/50 border-rose-200 opacity-80'
                         : 'bg-slate-50 border-slate-200'
                     }`}
@@ -379,16 +427,22 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="text-sm font-bold text-slate-900">{app.tutorName}</h4>
-                          {app.status === 'accepted' && (
+                          {(app.status === 'trial' || app.status === 'accepted') && (
                             <span className="px-2.5 py-0.5 text-[10px] font-bold bg-emerald-600 text-white rounded-full flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" />
-                              <span>নির্বাচিত টিউটর (Accepted)</span>
+                              <span>ট্রায়ালে নির্বাচিত (Trial)</span>
                             </span>
                           )}
                           {app.status === 'rejected' && (
                             <span className="px-2.5 py-0.5 text-[10px] font-bold bg-rose-600 text-white rounded-full flex items-center gap-1">
                               <XCircle className="w-3 h-3" />
                               <span>রিজেক্টেড (Rejected)</span>
+                            </span>
+                          )}
+                          {app.status === 'rejected_from_trial' && (
+                            <span className="px-2.5 py-0.5 text-[10px] font-bold bg-rose-600 text-white rounded-full flex items-center gap-1">
+                              <XCircle className="w-3 h-3" />
+                              <span>ট্রায়াল থেকে রিজেক্টেড (Rejected from Trial)</span>
                             </span>
                           )}
                           {app.status === 'pending' && (
@@ -410,7 +464,7 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
                           <span className="text-xs font-bold text-slate-500 animate-pulse px-3 py-1 bg-slate-200 rounded-lg">
                             প্রসেসিং হচ্ছে...
                           </span>
-                        ) : app.status === 'accepted' ? (
+                        ) : app.status === 'trial' || app.status === 'accepted' ? (
                           <>
                             <button
                               onClick={() => handleCancelAcceptance(app.id)}
@@ -420,11 +474,11 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
                               সিলেকশন বাতিল
                             </button>
                             <button
-                              onClick={() => handleRejectApplicant(app.id)}
+                              onClick={() => handleRejectFromTrial(app.id)}
                               className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
                             >
                               <XCircle className="w-3.5 h-3.5" />
-                              <span>রিজেক্ট করুন</span>
+                              <span>ট্রায়াল থেকে রিজেক্ট</span>
                             </button>
                             <button
                               onClick={() => setConfirmingAppId(confirmingAppId === app.id ? null : app.id)}
@@ -434,13 +488,13 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
                               <span>টিউশন চূড়ান্ত করুন</span>
                             </button>
                           </>
-                        ) : app.status === 'rejected' ? (
+                        ) : app.status === 'rejected' || app.status === 'rejected_from_trial' ? (
                           <button
                             onClick={() => handleAcceptApplicant(app.id)}
                             className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>পুনরায় সিলেক্ট করুন</span>
+                            <span>পুনরায় ট্রায়ালের জন্য সিলেক্ট করুন</span>
                           </button>
                         ) : (
                           <>
@@ -451,13 +505,15 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
                               <XCircle className="w-3.5 h-3.5" />
                               <span>রিজেক্ট করুন</span>
                             </button>
-                            <button
-                              onClick={() => handleAcceptApplicant(app.id)}
-                              className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>টিউটর সিলেক্ট করুন</span>
-                            </button>
+                            {postData.status !== 'trial' && postData.status !== 'accepted' && (
+                              <button
+                                onClick={() => handleAcceptApplicant(app.id)}
+                                className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>ট্রায়ালের জন্য সিলেক্ট করুন</span>
+                              </button>
+                            )}
                           </>
                         )}
                       </div>
@@ -493,8 +549,8 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
                       </div>
                     )}
 
-                    {/* Show Tutor Phone if accepted */}
-                    {app.status === 'accepted' && (
+                    {/* Show Tutor Phone if accepted / in trial */}
+                    {(app.status === 'trial' || app.status === 'accepted') && (
                       <div className="mt-3 p-3 bg-white border border-emerald-300 rounded-xl space-y-1">
                         <p className="text-xs font-bold text-emerald-900">
                           {getTranslation(language, 'pleaseCallTutor')}
@@ -542,7 +598,7 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
             </div>
 
             <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-              tutorApp.status === 'accepted'
+              tutorApp.status === 'trial' || tutorApp.status === 'accepted'
                 ? 'bg-emerald-100 text-emerald-800'
                 : tutorApp.status === 'pending'
                 ? 'bg-amber-100 text-amber-800'
@@ -550,12 +606,14 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
                 ? 'bg-indigo-100 text-indigo-800'
                 : 'bg-rose-100 text-rose-800'
             }`}>
-              {tutorApp.status === 'accepted'
-                ? 'গৃহীত (Accepted)'
+              {tutorApp.status === 'trial' || tutorApp.status === 'accepted'
+                ? 'ট্রায়ালে (In Trial)'
                 : tutorApp.status === 'pending'
                 ? 'পেন্ডিং (Pending)'
                 : tutorApp.status === 'confirmed'
-                ? 'অনুরূপ সম্পন্ন (Taken)'
+                ? 'সম্পন্ন (Confirmed)'
+                : tutorApp.status === 'rejected_from_trial'
+                ? 'ট্রায়াল বাতিল (Trial Rejected)'
                 : 'বাতিল (Declined)'}
             </span>
           </div>
@@ -566,18 +624,33 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language }) => {
           {tutorApp.status === 'pending' && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs font-medium space-y-1">
               <p className="font-bold">{getTranslation(language, 'statusPending')}</p>
-              <p>অভিভাবক আপনার আবেদন খতিয়ে দেখছেন। অভিভাবক পছন্দ করলে আপনাকে এই পেজে বা ফোনে অবহিত করবেন।</p>
+              {tutorApp.postInfo?.status === 'trial' || tutorApp.postInfo?.status === 'accepted' ? (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-900">
+                  <strong className="block mb-1 text-sm">অন্যান্য টিউটর ট্রায়ালে আছেন (Another Tutor in Trial)</strong>
+                  অভিভাবক বর্তমানে অন্য একজন টিউটরের সাথে কথা বলছেন বা ট্রায়াল নিচ্ছেন। যদি তিনি চূড়ান্ত না হন, তবে আপনার সুযোগ আসতে পারে। অনুগ্রহ করে অপেক্ষা করুন।
+                </div>
+              ) : (
+                <p>অভিভাবক আপনার আবেদন খতিয়ে দেখছেন। অভিভাবক পছন্দ করলে আপনাকে এই পেজে বা ফোনে অবহিত করবেন।</p>
+              )}
             </div>
           )}
 
-          {/* Case 2: Accepted (5-Hour Countdown Timer) */}
-          {tutorApp.status === 'accepted' && (
+          {/* Case 2: Rejected from trial */}
+          {tutorApp.status === 'rejected_from_trial' && (
+            <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-900 text-xs font-medium space-y-1">
+              <p className="font-bold">আপনার ট্রায়াল বাতিল করা হয়েছে (Trial Rejected)</p>
+              <p>অভিভাবক ট্রায়াল পিরিয়ড শেষে আপনাকে নির্বাচন করেননি। অনুগ্রহ করে অন্য টিউশন পোস্টে আবেদন করুন।</p>
+            </div>
+          )}
+
+          {/* Case 3: Accepted / Trial (5-Hour Countdown Timer) */}
+          {(tutorApp.status === 'trial' || tutorApp.status === 'accepted') && (
             <div className="p-5 bg-emerald-50 border-2 border-emerald-300 rounded-2xl space-y-4">
               <div className="flex items-center gap-3">
                 <Clock className="w-6 h-6 text-emerald-600 animate-pulse shrink-0" />
                 <div>
                   <h4 className="text-sm font-bold text-emerald-950">
-                    অভিভাবক আপনাকে পছন্দ করেছেন!
+                    অভিভাবক আপনাকে ট্রায়ালের জন্য পছন্দ করেছেন!
                   </h4>
                   <p className="text-xs text-emerald-800 font-medium mt-0.5">
                     {getTranslation(language, 'acceptedTimerNotice')}
