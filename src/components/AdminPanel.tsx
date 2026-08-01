@@ -20,11 +20,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [adminToken, setAdminToken] = useState<string | null>(() => localStorage.getItem('admin_token'));
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authError, setAuthError] = useState('');
-  const [activeTab, setActiveTab] = useState<'pending' | 'recovery' | 'taxonomy' | 'stats'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'live' | 'recovery' | 'taxonomy' | 'stats'>('pending');
 
   // Pending Posts
   const [pendingPosts, setPendingPosts] = useState<TuitionPost[]>([]);
   const [loadingPending, setLoadingPending] = useState(false);
+
+  // Live Posts
+  const [livePosts, setLivePosts] = useState<TuitionPost[]>([]);
+  const [loadingLive, setLoadingLive] = useState(false);
 
   // Recovery State
   const [recoveryQuery, setRecoveryQuery] = useState('');
@@ -43,6 +47,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   useEffect(() => {
     if (adminToken) {
       fetchPendingPosts(adminToken);
+      fetchLivePosts(adminToken);
       fetchSiteStats();
     }
   }, [adminToken]);
@@ -62,6 +67,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         localStorage.setItem('admin_token', data.token);
         setIsAuthenticated(true);
         fetchPendingPosts(data.token);
+        fetchLivePosts(data.token);
         fetchSiteStats();
       } else {
         setAuthError(data.error || 'ভুল ইমেইল অথবা পাসওয়ার্ড!');
@@ -98,6 +104,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       console.error(err);
     } finally {
       setLoadingPending(false);
+    }
+  };
+
+  const fetchLivePosts = async (tokenOverride?: string) => {
+    const token = tokenOverride || adminToken;
+    if (!token) return;
+    setLoadingLive(true);
+    try {
+      const res = await fetch('/api/admin/live-posts', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLivePosts(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingLive(false);
     }
   };
 
@@ -305,6 +330,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </button>
 
                 <button
+                  onClick={() => setActiveTab('live')}
+                  className={`px-4 py-2 text-xs font-bold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors ${
+                    activeTab === 'live'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <Database className="w-4 h-4" />
+                  <span>লাইভ পোস্ট ({livePosts.length})</span>
+                </button>
+
+                <button
                   onClick={() => setActiveTab('recovery')}
                   className={`px-4 py-2 text-xs font-bold rounded-xl flex items-center gap-2 whitespace-nowrap transition-colors ${
                     activeTab === 'recovery'
@@ -397,6 +434,68 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   ) : (
                     <div className="text-center py-10 text-xs text-slate-400">
                       বর্তমানে কোনো পেন্ডিং পোস্ট নেই।
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 1.5: LIVE POSTS */}
+              {activeTab === 'live' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-slate-900">
+                      লাইভ টিউশন পোস্ট
+                    </h3>
+                    <button
+                      onClick={() => fetchLivePosts(adminToken || undefined)}
+                      className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg text-xs flex items-center gap-1 font-semibold"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>রিফ্রেশ</span>
+                    </button>
+                  </div>
+
+                  {livePosts.length > 0 ? (
+                    <div className="space-y-4">
+                      {livePosts.map(post => (
+                        <div key={post.id} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col space-y-3">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm text-slate-900">{post.parentName}</span>
+                                <span className="text-xs text-slate-500">({post.parentPhone})</span>
+                                <span className="px-2 py-0.5 text-[10px] font-mono bg-amber-100 text-amber-900 rounded font-bold">
+                                  {post.secretCode}
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-600 mt-1">
+                                {post.studentClass} ({post.medium}) — {post.thana}, {post.district} | ৳{post.salary}
+                              </p>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                বিষয়: {post.subjects.join(', ')}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setManageCode(manageCode === post.secretCode ? null : post.secretCode)}
+                                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                {manageCode === post.secretCode ? 'Close' : 'Manage Applications'}
+                              </button>
+                            </div>
+                          </div>
+                          {manageCode === post.secretCode && (
+                            <div className="mt-2 border-t border-slate-200 pt-3">
+                              <TrackCodeView language={language} initialCode={post.secretCode} />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-10 text-xs text-slate-400">
+                      বর্তমানে কোনো লাইভ পোস্ট নেই।
                     </div>
                   )}
                 </div>
@@ -560,7 +659,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <div className="p-4 bg-slate-50 border rounded-xl">
-                      <span className="text-slate-400 text-xs font-medium block">মোট পোস্ট</span>
+                      <span className="text-slate-400 text-xs font-medium block">মোট লাইভ পোস্ট</span>
                       <span className="text-2xl font-black text-slate-900">{stats.totalPosts}</span>
                     </div>
 

@@ -865,12 +865,23 @@ class UnifiedDatabaseManager {
       }
     }
 
+    if (this.supabase) {
+      try {
+        await this.supabase.from('posts').update({ status: 'live' }).eq('id', postId);
+      } catch (e) {
+        console.warn('Supabase update post to live error:', e);
+      }
+    }
+
     this.localData.applications.forEach(a => {
       if (a.postId === postId) {
         a.status = 'pending';
         delete a.acceptedAt;
       }
     });
+    const post = this.localData.posts.find(p => p.id === postId);
+    if (post) post.status = 'live';
+
     this.saveLocalData(this.localData);
 
     return true;

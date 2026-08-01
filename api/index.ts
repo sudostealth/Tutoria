@@ -201,6 +201,17 @@ app.get('/api/taxonomy', async (req, res, next) => {
   }
 });
 
+// Protected: Live Posts list for Admin
+app.get('/api/admin/live-posts', requireAdminAuth, async (req, res, next) => {
+  try {
+    const posts = await db.getAllPosts(true);
+    res.json(posts);
+  } catch (err: any) {
+    console.error('Admin live posts error:', err);
+    next(err);
+  }
+});
+
 // Add custom taxonomy option (for custom subjects, locations, institutions)
 app.post('/api/taxonomy/add', async (req, res, next) => {
   const { type, key, value } = sanitizeInput(req.body);
