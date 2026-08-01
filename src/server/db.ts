@@ -907,8 +907,12 @@ class UnifiedDatabaseManager {
         const { error: err1 } = await this.supabase.from('applications').update({ status: 'confirmed' }).eq('id', applicationId);
         if (err1) throw new Error(err1.message);
 
-        // Before deleting the post, set post_id to null for all applications referencing it to satisfy FK constraints
-        const { error: err2 } = await this.supabase.from('applications').update({ post_id: null }).eq('post_id', postId);
+        // Delete all OTHER unaccepted/unconfirmed applications for this post
+        const { error: errOther } = await this.supabase.from('applications').delete().eq('post_id', postId).neq('id', applicationId);
+        if (errOther) throw new Error(errOther.message);
+
+        // Before deleting the post, set post_id to null for the confirmed application to satisfy FK constraints
+        const { error: err2 } = await this.supabase.from('applications').update({ post_id: null }).eq('id', applicationId);
         if (err2) throw new Error(err2.message);
 
         const { error: err3 } = await this.supabase.from('posts').delete().eq('id', postId);
@@ -923,14 +927,41 @@ class UnifiedDatabaseManager {
     if (postIndex !== -1) {
       this.localData.posts.splice(postIndex, 1);
     }
-    this.localData.applications.forEach(a => {
+
+    // Remove all other applications for this post except the confirmed one
+    this.localData.applications = this.localData.applications.filter(a => {
       if (a.postId === postId) {
-        if (a.id === applicationId) a.status = 'confirmed';
-        else a.status = 'rejected';
+        if (a.id === applicationId) {
+          a.status = 'confirmed';
+          return true; // Keep this one
+        }
+        return false; // Remove others
       }
+      return true; // Keep applications for other posts
     });
+
     this.saveLocalData(this.localData);
     return true;
+  }
+
+
+  async deleteApplicationById(id: string): Promise<boolean> {
+    if (this.supabase) {
+      try {
+        const { error } = await this.supabase.from('applications').delete().eq('id', id);
+        if (error) throw new Error(error.message);
+      } catch (e) {
+        console.warn('Supabase deleteApplicationById error:', e);
+        return false;
+      }
+    }
+    const initialLen = this.localData.applications.length;
+    this.localData.applications = this.localData.applications.filter(a => a.id !== id);
+    if (this.localData.applications.length < initialLen) {
+      this.saveLocalData(this.localData);
+      return true;
+    }
+    return false;
   }
 
   // --- ADMIN & MODERATION ---
@@ -1032,8 +1063,10 @@ class UnifiedDatabaseManager {
 
   // --- SITE STATS ---
   async getSiteStats(): Promise<SiteStats> {
-    const allPosts = await this.getAllPosts(true);
+    const allPosts = await this.getAllPosts(false);
     const totalPosts = allPosts.length;
+    const livePosts = allPosts.filter(p => p.status === 'live');
+    const totalLivePosts = livePosts.length;
 
     // 1. Calculate Unique Tutors Connected
     let uniqueTutorsMap = new Map<string, UniqueTutorRecord>();
@@ -1227,6 +1260,7 @@ class UnifiedDatabaseManager {
 
     return {
       totalPosts,
+      totalLivePosts,
       totalUniqueTutors,
       topDivision: {
         name: topDivName,

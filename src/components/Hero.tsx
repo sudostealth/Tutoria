@@ -29,7 +29,7 @@ export const Hero: React.FC<HeroProps> = ({
   const [tutorsCount, setTutorsCount] = useState(0);
   const [quickCodeInput, setQuickCodeInput] = useState('');
 
-  const targetPosts = stats ? (stats.totalPosts ?? 0) : 0;
+  const targetPosts = stats ? (stats.totalLivePosts ?? 0) : 0;
   const targetTutors = stats ? (stats.totalUniqueTutors ?? 0) : 0;
 
   useEffect(() => {

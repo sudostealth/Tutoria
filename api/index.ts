@@ -625,6 +625,8 @@ app.post('/api/applications/secret', async (req, res, next) => {
       }
     } else if (application.status === 'confirmed') {
       showParentContact = false;
+      // Delete the application from the database after fetching it the first time.
+      await db.deleteApplicationById(application.id);
     }
 
     res.json({
