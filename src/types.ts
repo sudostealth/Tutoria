@@ -118,6 +118,7 @@ export interface UniqueTutorRecord {
 
 export interface SiteStats {
   totalPosts: number;
+  totalLivePosts: number;
   totalUniqueTutors: number;
   topDivision: {
     name: string;

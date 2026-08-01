@@ -134,11 +134,16 @@ export const StatModal: React.FC<StatModalProps> = ({
             <div className="space-y-6">
               
               {/* Summary Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl text-center space-y-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">মোট পোস্ট সংখ্যা</span>
                   <p className="text-2xl font-black text-emerald-800">{stats?.totalPosts || 0}</p>
                   <span className="text-[10px] text-emerald-600 font-medium block">ডাটাবেজে সংরক্ষিত</span>
+                </div>
+                <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl text-center space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">লাইভ পোস্ট সংখ্যা</span>
+                  <p className="text-2xl font-black text-emerald-800">{stats?.totalLivePosts || 0}</p>
+                  <span className="text-[10px] text-emerald-600 font-medium block">বর্তমানে লাইভ</span>
                 </div>
 
                 <div className="p-4 bg-teal-50/60 border border-teal-200 rounded-2xl text-center space-y-1">

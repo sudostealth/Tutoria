@@ -690,15 +690,15 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language, initialC
             </div>
           )}
 
-          {/* Case 3: Confirmed / Taken by another tutor */}
+          {/* Case 3: Confirmed / Taken by another tutor (or by YOU) */}
           {tutorApp.status === 'confirmed' && (
             <div className="p-5 bg-indigo-50 border border-indigo-200 rounded-2xl text-indigo-900 space-y-2">
               <div className="flex items-center gap-2 text-sm font-bold">
                 <CheckCircle2 className="w-5 h-5 text-indigo-600" />
-                <span>টিউশনটি সম্পন্ন হয়েছে</span>
+                <span>অভিনন্দন! আপনি টিউশনটির জন্য নির্বাচিত হয়েছেন (Congratulations! You are selected)</span>
               </div>
-              <p className="text-xs font-medium leading-relaxed">
-                {getTranslation(language, 'confirmedOtherNotice')}
+              <p className="text-xs font-medium leading-relaxed text-indigo-700">
+                নোট: এরপর থেকে এই সিক্রেট কোডটি আর কাজ করবে না কারণ ডাটাবেজ থেকে আপনার আবেদনটি ডিলিট করে দেওয়া হয়েছে। (Note: After this time this secret code will not work because the application has been deleted from the database).
               </p>
             </div>
           )}

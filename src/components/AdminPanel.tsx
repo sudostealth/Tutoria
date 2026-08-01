@@ -715,10 +715,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     সাইট মেট্রিক্স ও সামারি
                   </h3>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="p-4 bg-slate-50 border rounded-xl">
+                      <span className="text-slate-400 text-xs font-medium block">মোট পোস্ট</span>
+                      <span className="text-2xl font-black text-slate-900">{stats.totalPosts}</span>
+                    </div>
                     <div className="p-4 bg-slate-50 border rounded-xl">
                       <span className="text-slate-400 text-xs font-medium block">মোট লাইভ পোস্ট</span>
-                      <span className="text-2xl font-black text-slate-900">{stats.totalPosts}</span>
+                      <span className="text-2xl font-black text-emerald-600">{stats.totalLivePosts}</span>
                     </div>
 
                     <div className="p-4 bg-slate-50 border rounded-xl">
