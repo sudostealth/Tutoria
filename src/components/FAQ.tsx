@@ -62,8 +62,8 @@ export const FAQ: React.FC<FAQProps> = ({
       category: 'parent',
       questionBn: 'পছন্দের টিউটর বেছে নিবো ও কীভাবে তাদের সাথে কথা বলবো?',
       questionEn: 'How do I review and accept a tutor for my child?',
-      answerBn: '"ট্র্যাক করুন" ট্যাবে গিয়ে আপনার অভিভাবক গোপন কোডটি লিখুন। আপনার পোস্টে আবেদনকারী টিউটরদের শিক্ষাগত যোগ্যতা, ডিপার্টমেন্ট ও অভিজ্ঞতার বিস্তারিত দেখতে পাবেন। উপযুক্ত টিউটরের পাশের "গ্রহণ করুন (Accept)" বাটনে চাপ দিলেই সরাসরি তাদের মোবাইল নম্বর আনলক হয়ে যাবে।',
-      answerEn: 'Go to the "Track" tab and enter your parent secret code. You will see a verified list of tutors who applied, along with their education and experience. Click "Accept" on your preferred tutor to instantly unlock their mobile contact number.',
+      answerBn: '"ট্র্যাক করুন" ট্যাবে গিয়ে আপনার অভিভাবক গোপন কোডটি লিখুন। আপনার পোস্টে আবেদনকারী টিউটরদের বিস্তারিত দেখতে পাবেন। পছন্দসই টিউটরকে "ট্রায়ালের জন্য সিলেক্ট করুন"। ৫ ঘণ্টা পর টিউটর আপনার নাম্বার দেখতে পাবেন এবং কল করবেন। ট্রায়াল ক্লাস শেষে আপনি তাকে চূড়ান্ত বা বাতিল করতে পারবেন।',
+      answerEn: 'Go to the "Track" tab and enter your parent secret code. You will see applied tutors. Select your preferred tutor for a "Trial". After 5 hours, the tutor will see your number and call you. After the trial class, you can finally confirm or reject them.',
       badgeBn: 'সহজ প্রসেস',
       badgeEn: 'Easy Steps'
     },
@@ -114,8 +114,8 @@ export const FAQ: React.FC<FAQProps> = ({
       category: 'tutor',
       questionBn: 'অভিভাবক আমাকে নির্বাচন করেছেন কিনা তা কিভাবে বুঝবো?',
       questionEn: 'How will I know if a parent accepts my application?',
-      answerBn: 'আপনার টিউটর গোপন কোডটি "ট্র্যাক করুন" পেজে দিয়ে স্ট্যাটাস চেক করুন। অভিভাবক আপনার আবেদন একসেপ্ট করলেই অভিভাবকের মোবাইল নম্বরটি সাথে সাথে আনলক হয়ে যাবে এবং ৫ মিনিটের কাউন্টডাউন টাইমার শুরু হবে।',
-      answerEn: 'Enter your Tutor Secret Code in the "Track" page. When a parent accepts your profile, the parent’s verified phone number will automatically unlock alongside a direct contact window.',
+      answerBn: 'আপনার টিউটর গোপন কোডটি "ট্র্যাক করুন" পেজে দিয়ে স্ট্যাটাস চেক করুন। অভিভাবক আপনার আবেদন ট্রায়ালের জন্য একসেপ্ট করলে, ৫ ঘণ্টা পর অভিভাবকের মোবাইল নম্বরটি আনলক হয়ে যাবে, তখন আপনি কল করতে পারবেন।',
+      answerEn: 'Enter your Tutor Secret Code in the "Track" page. When a parent accepts your profile for a trial, you will be able to see their phone number after a 5-hour countdown timer.',
       badgeBn: 'রিয়েলটাইম আপডেট',
       badgeEn: 'Live Status'
     },

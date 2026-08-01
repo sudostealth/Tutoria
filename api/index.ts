@@ -460,6 +460,28 @@ app.post('/api/posts/secret/cancel-accept', async (req, res, next) => {
   }
 });
 
+// 9a. Reject Tutor from Trial (Parent action)
+app.post('/api/posts/secret/reject-trial', async (req, res, next) => {
+  try {
+    const { secretCode, applicationId } = sanitizeInput(req.body);
+    if (!secretCode || !applicationId) {
+      res.status(400).json({ error: 'Secret code and applicationId required' });
+      return;
+    }
+    const post = await db.getPostBySecretCode(secretCode);
+    if (!post) {
+      res.status(404).json({ error: 'Invalid secret code' });
+      return;
+    }
+
+    const success = await db.rejectApplicationFromTrial(post.id, applicationId);
+    res.json({ success });
+  } catch (err: any) {
+    console.error('Reject trial error:', err);
+    next(err);
+  }
+});
+
 // 9b. Directly Reject Tutor Application (Parent action)
 app.post('/api/posts/secret/reject', async (req, res, next) => {
   try {
@@ -569,12 +591,12 @@ app.post('/api/applications/secret', async (req, res, next) => {
       return;
     }
 
-    // Determine 5-hour countdown timer status if status is 'accepted'
+    // Determine 5-hour countdown timer status if status is 'trial' (was 'accepted' before)
     let hoursRemaining = 5;
     let timerExpired = false;
     let showParentContact = false;
 
-    if (application.status === 'accepted') {
+    if (application.status === 'trial' || application.status === 'accepted') {
       if (!application.acceptedAt) {
         application.acceptedAt = application.createdAt || new Date().toISOString();
       }

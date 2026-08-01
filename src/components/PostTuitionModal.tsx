@@ -420,6 +420,12 @@ export const PostTuitionModal: React.FC<PostTuitionModalProps> = ({
                 </p>
               </div>
 
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl max-w-md mx-auto text-left flex items-start gap-3">
+                <p className="text-xs text-blue-900 leading-relaxed font-medium">
+                  <strong>জরুরী:</strong> যদি ১ ঘন্টার মধ্যে আপনার টিউশন পোস্টটি এপ্রুভ (Live) না হয়, তাহলে আমাদের টেলিগ্রাম চ্যানেল ও গ্রুপে যুক্ত হোন এবং এডমিনকে মেনশন করে পোস্টটি এক্সেপ্ট করতে বলুন। (If your tuition post is not approved within 1 hour, connect to our Telegram channel and group and mention the admin to accept the post.)
+                </p>
+              </div>
+
               <div className="pt-2">
                 <button
                   onClick={onClose}

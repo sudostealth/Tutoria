@@ -47,7 +47,7 @@ function generateSecretCode(prefix: 'P' | 'T'): string {
   for (let i = 0; i < 6; i++) {
     random += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  return `FTM-${prefix}-${random}`;
+  return `TUTR-${prefix}-${random}`;
 }
 
 // Helpers for mapping between Supabase rows and TypeScript models
@@ -735,11 +735,11 @@ class UnifiedDatabaseManager {
 
     for (const a of apps) {
       if (a.id === applicationId) {
-        a.status = 'accepted';
+        a.status = 'trial';
         a.acceptedAt = now;
         targetApp = a;
       } else {
-        a.status = 'rejected';
+        a.status = 'pending';
         delete a.acceptedAt;
       }
 
@@ -755,21 +755,65 @@ class UnifiedDatabaseManager {
       }
     }
 
+    if (this.supabase) {
+      try {
+        await this.supabase.from('posts').update({ status: 'trial' }).eq('id', postId);
+      } catch (e) {
+        console.warn('Supabase update post to trial error:', e);
+      }
+    }
+
     this.localData.applications.forEach(a => {
       if (a.postId === postId) {
         if (a.id === applicationId) {
-          a.status = 'accepted';
+          a.status = 'trial';
           a.acceptedAt = now;
           targetApp = a;
         } else {
-          a.status = 'rejected';
+          a.status = 'pending';
           delete a.acceptedAt;
         }
       }
     });
+    const post = this.localData.posts.find(p => p.id === postId);
+    if (post) post.status = 'trial';
+
     this.saveLocalData(this.localData);
 
     return { success: true, application: targetApp };
+  }
+
+  async rejectApplicationFromTrial(postId: string, applicationId: string): Promise<boolean> {
+    const apps = await this.getApplicationsByPostId(postId);
+    const target = apps.find(a => a.id === applicationId);
+    if (!target) return false;
+
+    target.status = 'rejected_from_trial';
+    delete target.acceptedAt;
+
+    if (this.supabase) {
+      try {
+        await this.supabase.from('applications').update({
+          status: 'rejected_from_trial',
+          accepted_at: null
+        }).eq('id', applicationId);
+        await this.supabase.from('posts').update({ status: 'live' }).eq('id', postId);
+      } catch (e) {
+        console.warn('Supabase rejectApplicationFromTrial error:', e);
+      }
+    }
+
+    this.localData.applications.forEach(a => {
+      if (a.id === applicationId) {
+        a.status = 'rejected_from_trial';
+        delete a.acceptedAt;
+      }
+    });
+    const post = this.localData.posts.find(p => p.id === postId);
+    if (post) post.status = 'live';
+
+    this.saveLocalData(this.localData);
+    return true;
   }
 
   async rejectApplication(postId: string, applicationId: string): Promise<boolean> {
