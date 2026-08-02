@@ -1,0 +1,3 @@
+$ tsx server.ts
+Supabase URL/Key not detected in environment variables. Using local persistent JSON data store.
+Free Tuition Media server running on http://0.0.0.0:3000
