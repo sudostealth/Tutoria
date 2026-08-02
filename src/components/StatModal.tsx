@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Language, SiteStats } from '../types';
 import { getTranslation } from '../lib/i18n';
 import { X, Search, MapPin, ChevronDown, ChevronRight, Building, Calendar, Users, BarChart3, TrendingUp, ShieldCheck } from 'lucide-react';
+import { StatHotspotsMap } from './StatHotspotsMap';
 
 interface StatModalProps {
   language: Language;
@@ -233,6 +234,9 @@ export const StatModal: React.FC<StatModalProps> = ({
           {/* TAB 2: GEOGRAPHIC BREAKDOWN */}
           {activeTab === 'geo' && (
             <div className="space-y-4">
+
+              {/* Stat Hotspots Map */}
+              <StatHotspotsMap language={language} stats={stats} />
               
               {/* Search Input */}
               <div className="relative">
