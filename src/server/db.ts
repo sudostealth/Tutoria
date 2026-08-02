@@ -1147,11 +1147,24 @@ class UnifiedDatabaseManager {
 
     const totalUniqueTutors = uniqueTutorsMap.size;
 
-    // 2. Calculate Monthly, Yearly, and Location-wise Aggregates
+    // 2. Fetch post_stats for Lifetime Aggregates
+    let postStatsData: any[] = [];
+    if (this.supabase) {
+      try {
+        const { data, error } = await this.supabase.from('post_stats').select('*');
+        if (!error && data) {
+          postStatsData = data;
+        }
+      } catch (e) {
+        console.warn('Error fetching post_stats:', e);
+      }
+    } else {
+      postStatsData = this.localData.postStats || [];
+    }
+
     const monthlyMap: Record<string, { year: number; month: number; yearMonth: string; count: number }> = {};
     const yearlyMap: Record<number, number> = {};
     const locationMonthlyMap: Record<string, LocationMonthlyStat> = {};
-
     const divMap: Record<string, {
       total: number;
       districts: Record<string, {
@@ -1160,49 +1173,72 @@ class UnifiedDatabaseManager {
       }>;
     }> = {};
 
-    allPosts.forEach(p => {
-      const postDate = new Date(p.createdAt || Date.now());
-      const year = postDate.getUTCFullYear() || new Date().getUTCFullYear();
-      const month = (postDate.getUTCMonth() + 1) || (new Date().getUTCMonth() + 1);
-      const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
+    postStatsData.forEach((stat: any) => {
+      const year = stat.year;
+      const month = stat.month;
+      const yearMonth = stat.year_month || `${year}-${String(month).padStart(2, '0')}`;
+      const div = stat.division || 'Dhaka';
+      const dist = stat.district || 'Dhaka';
+      const thana = stat.thana || 'Dhanmondi';
+      const count = stat.post_count || stat.postCount || 1;
 
       // Monthly counter
       if (!monthlyMap[yearMonth]) {
         monthlyMap[yearMonth] = { year, month, yearMonth, count: 0 };
       }
-      monthlyMap[yearMonth].count += 1;
+      monthlyMap[yearMonth].count += count;
 
       // Yearly counter
-      yearlyMap[year] = (yearlyMap[year] || 0) + 1;
+      yearlyMap[year] = (yearlyMap[year] || 0) + count;
 
       // Location monthly stat
-      const locKey = `${yearMonth}-${p.division}-${p.district}-${p.thana}`;
+      const locKey = `${yearMonth}-${div}-${dist}-${thana}`;
       if (!locationMonthlyMap[locKey]) {
         locationMonthlyMap[locKey] = {
           yearMonth,
           year,
           month,
-          division: p.division,
-          district: p.district,
-          thana: p.thana,
+          division: div,
+          district: dist,
+          thana,
           postCount: 0
         };
       }
-      locationMonthlyMap[locKey].postCount += 1;
+      locationMonthlyMap[locKey].postCount += count;
 
       // Geographic breakdown
+      if (!divMap[div]) divMap[div] = { total: 0, districts: {} };
+      divMap[div].total += count;
+
+      if (!divMap[div].districts[dist]) divMap[div].districts[dist] = { total: 0, thanas: {} };
+      divMap[div].districts[dist].total += count;
+
+      if (!divMap[div].districts[dist].thanas[thana]) divMap[div].districts[dist].thanas[thana] = 0;
+      divMap[div].districts[dist].thanas[thana] += count;
+    });
+
+    // 3. Compute Live Geographic Breakdown specifically for live posts map
+    const liveDivMap: Record<string, {
+      total: number;
+      districts: Record<string, {
+        total: number;
+        thanas: Record<string, number>;
+      }>;
+    }> = {};
+
+    livePosts.forEach(p => {
       const div = p.division || 'Dhaka';
       const dist = p.district || 'Dhaka';
       const thana = p.thana || 'Dhanmondi';
 
-      if (!divMap[div]) divMap[div] = { total: 0, districts: {} };
-      divMap[div].total += 1;
+      if (!liveDivMap[div]) liveDivMap[div] = { total: 0, districts: {} };
+      liveDivMap[div].total += 1;
 
-      if (!divMap[div].districts[dist]) divMap[div].districts[dist] = { total: 0, thanas: {} };
-      divMap[div].districts[dist].total += 1;
+      if (!liveDivMap[div].districts[dist]) liveDivMap[div].districts[dist] = { total: 0, thanas: {} };
+      liveDivMap[div].districts[dist].total += 1;
 
-      if (!divMap[div].districts[dist].thanas[thana]) divMap[div].districts[dist].thanas[thana] = 0;
-      divMap[div].districts[dist].thanas[thana] += 1;
+      if (!liveDivMap[div].districts[dist].thanas[thana]) liveDivMap[div].districts[dist].thanas[thana] = 0;
+      liveDivMap[div].districts[dist].thanas[thana] += 1;
     });
 
     const monthNamesBangla = [
@@ -1258,8 +1294,34 @@ class UnifiedDatabaseManager {
       };
     });
 
+    const liveGeographicBreakdown = Object.keys(liveDivMap).map(divName => {
+      const divData = liveDivMap[divName];
+
+      const districts = Object.keys(divData.districts).map(distName => {
+        const distData = divData.districts[distName];
+        const thanas = Object.keys(distData.thanas).map(thanaName => ({
+          thana: thanaName,
+          postCount: distData.thanas[thanaName]
+        }));
+        return {
+          district: distName,
+          postCount: distData.total,
+          thanas
+        };
+      });
+
+      return {
+        division: divName,
+        postCount: divData.total,
+        districts
+      };
+    });
+
+    let actualTotalPosts = 0;
+    Object.values(yearlyMap).forEach(count => actualTotalPosts += count);
+
     return {
-      totalPosts,
+      totalPosts: actualTotalPosts,
       totalLivePosts,
       totalUniqueTutors,
       topDivision: {
@@ -1268,6 +1330,7 @@ class UnifiedDatabaseManager {
       },
       runningSinceYear: 2023,
       geographicBreakdown,
+      liveGeographicBreakdown,
       monthlyBreakdown,
       yearlyBreakdown,
       locationMonthlyStats: Object.values(locationMonthlyMap)

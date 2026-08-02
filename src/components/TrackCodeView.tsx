@@ -246,7 +246,7 @@ export const TrackCodeView: React.FC<TrackCodeViewProps> = ({ language, initialC
 
   // Live timer tick effect for tutor accepted 5-hour countdown
   useEffect(() => {
-    if (!tutorApp || tutorApp.status !== 'accepted') return;
+    if (!tutorApp || (tutorApp.status !== 'accepted' && tutorApp.status !== 'trial')) return;
 
     const acceptedAtStr = tutorApp.acceptedAt || tutorApp.createdAt || new Date().toISOString();
     const acceptedTime = new Date(acceptedAtStr).getTime();

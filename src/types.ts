@@ -126,6 +126,7 @@ export interface SiteStats {
   };
   runningSinceYear: number;
   geographicBreakdown: GeographicStat[];
+  liveGeographicBreakdown: GeographicStat[];
   monthlyBreakdown: MonthlySummary[];
   yearlyBreakdown: YearlySummary[];
   locationMonthlyStats: LocationMonthlyStat[];
