@@ -153,8 +153,8 @@ export const HeroHotspotsMap: React.FC<HeroHotspotsMapProps> = ({
       }
 
       const isTopDivision = Boolean(
-        stats?.topDivision?.name &&
-        stats.topDivision.name.toLowerCase() === divKey.toLowerCase() &&
+        stats?.topLiveDivision?.name &&
+        stats.topLiveDivision.name.toLowerCase() === divKey.toLowerCase() &&
         realCount > 0
       );
 

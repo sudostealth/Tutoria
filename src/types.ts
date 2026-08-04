@@ -124,6 +124,10 @@ export interface SiteStats {
     name: string;
     count: number;
   };
+  topLiveDivision: {
+    name: string;
+    count: number;
+  };
   runningSinceYear: number;
   geographicBreakdown: GeographicStat[];
   liveGeographicBreakdown: GeographicStat[];

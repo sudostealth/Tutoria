@@ -1065,7 +1065,7 @@ class UnifiedDatabaseManager {
   async getSiteStats(): Promise<SiteStats> {
     const allPosts = await this.getAllPosts(false);
     const totalPosts = allPosts.length;
-    const livePosts = allPosts.filter(p => p.status === 'live');
+    const livePosts = allPosts.filter(p => p.status === 'live' || p.status === 'accepted');
     const totalLivePosts = livePosts.length;
 
     // 1. Calculate Unique Tutors Connected
@@ -1294,8 +1294,16 @@ class UnifiedDatabaseManager {
       };
     });
 
+    let topLiveDivName = 'Dhaka';
+    let topLiveDivCount = 0;
+
     const liveGeographicBreakdown = Object.keys(liveDivMap).map(divName => {
       const divData = liveDivMap[divName];
+
+      if (divData.total > topLiveDivCount) {
+        topLiveDivCount = divData.total;
+        topLiveDivName = divName;
+      }
 
       const districts = Object.keys(divData.districts).map(distName => {
         const distData = divData.districts[distName];
@@ -1327,6 +1335,10 @@ class UnifiedDatabaseManager {
       topDivision: {
         name: topDivName,
         count: topDivCount
+      },
+      topLiveDivision: {
+        name: topLiveDivName,
+        count: topLiveDivCount
       },
       runningSinceYear: 2023,
       geographicBreakdown,
