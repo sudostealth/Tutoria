@@ -43,48 +43,8 @@ export default function App() {
   const [salaryCalcModalOpen, setSalaryCalcModalOpen] = useState(false);
   const [selectedDivisionFilter, setSelectedDivisionFilter] = useState<string | undefined>(undefined);
 
-  // PWA Install Event State
-  const [deferredPwaPrompt, setDeferredPwaPrompt] = useState<any>(null);
-
   // Selected post for tutor application
   const [selectedPostForApply, setSelectedPostForApply] = useState<TuitionPost | null>(null);
-
-  useEffect(() => {
-    // Listen for PWA beforeinstallprompt event
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPwaPrompt(e);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
-
-  const handleInstallPwa = () => {
-    if (deferredPwaPrompt) {
-      deferredPwaPrompt.prompt();
-      deferredPwaPrompt.userChoice.then((choiceResult: any) => {
-        if (choiceResult.outcome === 'accepted') {
-          addToast({
-            type: 'success',
-            title: language === 'bn' ? 'Tutoria অ্যাপ ইন্সটল করা হচ্ছে!' : 'Installing Tutoria App!',
-            message: language === 'bn' ? 'ধন্যবাদ! অ্যাপটি আপনার হোমস্ক্রিনে যুক্ত হচ্ছে।' : 'Thank you! The app is being added to your home screen.'
-          });
-        }
-        setDeferredPwaPrompt(null);
-      });
-    } else {
-      addToast({
-        type: 'info',
-        title: language === 'bn' ? 'অ্যাপ ইন্সটল নির্দেশনা (PWA)' : 'Install App Instructions',
-        message: language === 'bn'
-          ? 'ব্রাউজারের ৩ ডট মেনু (⋮) বা Share বোতামে ট্যাপ করে "Add to Home Screen" বা "Install App" নির্বাচন করুন।'
-          : 'Tap browser 3-dots menu or Share button and select "Add to Home Screen".'
-      });
-    }
-  };
 
   const addToast = (toastData: Omit<ToastItem, 'id' | 'createdAt'>) => {
     const newToast: ToastItem = {
@@ -188,8 +148,6 @@ export default function App() {
           }
         }}
         onOpenCalculator={() => setSalaryCalcModalOpen(true)}
-        deferredPwaPrompt={deferredPwaPrompt}
-        onInstallPwa={handleInstallPwa}
       />
 
       {/* Main View Router */}
