@@ -5,21 +5,6 @@ import { AdminApp } from './admin/AdminApp';
 
 import './index.css';
 
-// Register Service Worker for PWA (Progressive Web App)
-if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(
-      (reg) => {
-        console.log('Tutoria PWA ServiceWorker registered with scope:', reg.scope);
-      },
-      (err) => {
-        console.log('Tutoria PWA ServiceWorker registration failed:', err);
-      }
-    );
-  });
-}
-
-
 const adminSlug = import.meta.env.VITE_ADMIN_SLUG;
 const currentPath = window.location.pathname;
 
