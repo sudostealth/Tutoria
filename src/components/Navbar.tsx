@@ -10,8 +10,6 @@ interface NavbarProps {
   activeTab: 'home' | 'browse' | 'post' | 'track' | 'how' | 'faq';
   setActiveTab: (tab: 'home' | 'browse' | 'post' | 'track' | 'how' | 'faq') => void;
   onOpenCalculator?: () => void;
-  deferredPwaPrompt?: any;
-  onInstallPwa?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -19,9 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLanguageToggle,
   activeTab,
   setActiveTab,
-  onOpenCalculator,
-  deferredPwaPrompt,
-  onInstallPwa
+  onOpenCalculator
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -64,18 +60,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Calculator className="w-3.5 h-3.5 text-amber-600" />
               <span>{language === 'bn' ? 'স্যালারি ক্যালকুলেটর' : 'Salary Calc'}</span>
-            </button>
-          )}
-
-          {/* PWA Install App Button */}
-          {onInstallPwa && (
-            <button
-              onClick={onInstallPwa}
-              className="px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
-              title={language === 'bn' ? 'অ্যাপ ইন্সটল করুন (PWA)' : 'Install App'}
-            >
-              <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{language === 'bn' ? 'অ্যাপ ইন্সটল' : 'Install App'}</span>
             </button>
           )}
 
@@ -183,18 +167,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {onInstallPwa && (
-              <button
-                onClick={() => {
-                  onInstallPwa();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-extrabold bg-emerald-50 text-emerald-900 border border-emerald-200 flex items-center gap-2 cursor-pointer"
-              >
-                <Smartphone className="w-4 h-4 text-emerald-600" />
-                <span>Tutoria অ্যাপ ফোনে ইন্সটল করুন (PWA App)</span>
-              </button>
-            )}
             {navItems.map(item => (
               <button
                 key={item.id}
