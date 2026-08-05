@@ -325,7 +325,15 @@ export const HeroHotspotsMap: React.FC<HeroHotspotsMapProps> = ({
         `;
       }
 
-      const countBadge = `${spot.count}`;
+      const countBadge = spot.count > 0 ? `
+              <span style="
+                background: ${badgeBg};
+                color: ${badgeTextColor};
+                padding: 1px 6px;
+                border-radius: 10px;
+                font-size: 10px;
+                font-weight: 900;
+              ">${spot.count}</span>` : '';
 
       const customIcon = L.divIcon({
         className: 'hotspot-marker-icon',
@@ -358,15 +366,7 @@ export const HeroHotspotsMap: React.FC<HeroHotspotsMapProps> = ({
                 border-radius: 50%;
                 display: inline-block;
               "></span>
-              <span>${isBn ? spot.nameBn : spot.nameEn}</span>
-              <span style="
-                background: ${badgeBg};
-                color: ${badgeTextColor};
-                padding: 1px 6px;
-                border-radius: 10px;
-                font-size: 10px;
-                font-weight: 900;
-              ">${countBadge}</span>
+              <span>${isBn ? spot.nameBn : spot.nameEn}</span>${countBadge}
             </div>
           </div>
         `,
@@ -477,11 +477,13 @@ export const HeroHotspotsMap: React.FC<HeroHotspotsMapProps> = ({
                 }`}
               >
                 <span>{isBn ? DIVISION_COORDS[divKey].nameBn : divKey}</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
-                  isSel ? 'bg-white/20 text-white' : count > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'
-                }`}>
-                  {count}
-                </span>
+                {count > 0 && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                    isSel ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    {count}
+                  </span>
+                )}
               </button>
             );
           })}
